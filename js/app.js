@@ -11,6 +11,8 @@
 
   const audioEngine = new window.MaestroAudioEngine();
 
+  const isMobileViewport = () => window.innerWidth <= 900 || window.innerHeight <= 600;
+
   // Application State
   const state = {
     activeTab: 'orchestra',
@@ -20,7 +22,7 @@
     currentParts: [],
     selectedPartIds: [], // empty = Full Score
     transposeSemi: 0,
-    zoomLevel: window.innerWidth <= 768 ? 0.58 : 0.85,
+    zoomLevel: isMobileViewport() ? 0.75 : 0.85,
     mixerConfig: {},
     xmlAutoScroll: false,
     xmlScrollPos: 0,
@@ -137,6 +139,7 @@
 
   function switchTab(tabName) {
     state.activeTab = tabName;
+    closeMobileControlsDrawers();
     $$('.nav-tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === tabName));
     $$('.tab-view').forEach((v) => v.classList.toggle('active', v.id === `view-${tabName}`));
 
@@ -317,7 +320,7 @@
       state.osmd = new window.opensheetmusicdisplay.OpenSheetMusicDisplay('osmd-container', {
         autoResize: true,
         backend: 'svg',
-        drawingParameters: 'default',
+        drawingParameters: isMobileViewport() ? 'compacttight' : 'default',
         followCursor: true,
         drawTitle: true,
         drawComposer: true,
@@ -331,7 +334,10 @@
     // Sample score switcher
     $('#select-sample-score').addEventListener('change', (e) => {
       const sample = window.MAESTRO_SAMPLES.musicxml[e.target.value];
-      if (sample) loadMusicXmlString(sample.xml, sample.title);
+      if (sample) {
+        loadMusicXmlString(sample.xml, sample.title);
+        closeMobileControlsDrawers();
+      }
     });
 
     // Upload MusicXML (.xml, .musicxml, .mxl)
@@ -342,6 +348,7 @@
       try {
         const xmlText = await window.MusicXMLProcessor.readUploadedFile(file);
         loadMusicXmlString(xmlText, file.name.replace(/\.(xml|musicxml|mxl)$/i, ''));
+        closeMobileControlsDrawers();
         showToast(`เปิดไฟล์ "${file.name}" สำเร็จ!`, 'success');
       } catch (err) {
         showToast(`เปิดไฟล์ไม่สำเร็จ: ${err.message}`, 'error');
@@ -359,6 +366,7 @@
         customIn.classList.add('hidden');
         state.transposeSemi = parseInt(e.target.value, 10) || 0;
         customIn.value = state.transposeSemi;
+        closeMobileControlsDrawers();
       }
       refreshOsmdRender();
     });
@@ -437,7 +445,9 @@
       state.rawXml = xmlString;
       state.currentTitle = meta.title || fallbackTitle;
       state.currentParts = meta.parts;
-      state.selectedPartIds = []; // Default to Full Score
+      // On smartphones, open lead part (P1) cleanly so notes are large & readable;
+      // users can switch to Full Score anytime from the slim bar dropdown.
+      state.selectedPartIds = isMobileViewport() && meta.parts.length > 0 ? [meta.parts[0].id] : [];
       state.mixerConfig = {};
 
       meta.parts.forEach((p) => {
@@ -495,6 +505,25 @@
       });
       bar.appendChild(btn);
     });
+
+    // Sync mobile slim-bar part dropdown
+    const mobSel = $('#mobile-part-select');
+    if (mobSel) {
+      mobSel.innerHTML = '';
+      const allOpt = document.createElement('option');
+      allOpt.value = '__ALL__';
+      allOpt.textContent = `Full Score (${state.currentParts.length} พาร์ท)`;
+      mobSel.appendChild(allOpt);
+
+      state.currentParts.forEach((p) => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = p.name;
+        mobSel.appendChild(opt);
+      });
+
+      mobSel.value = state.selectedPartIds.length === 1 ? state.selectedPartIds[0] : '__ALL__';
+    }
   }
 
   async function refreshOsmdRender() {
@@ -1281,6 +1310,7 @@
     const cards = $$('.stage-page-card');
     if (!cards.length) {
       $('#stage-page-info').textContent = 'หน้า 0 / 0';
+      if ($('#slim-page-text')) $('#slim-page-text').textContent = '0/0';
       return;
     }
     const vpTop = $('#stage-scroll-container').getBoundingClientRect().top;
@@ -1292,6 +1322,7 @@
     });
     state.stageCurrentPage = current;
     $('#stage-page-info').textContent = `หน้า ${current} / ${cards.length}`;
+    if ($('#slim-page-text')) $('#slim-page-text').textContent = `${current}/${cards.length}`;
   }
 
   // =========================================================================
@@ -1598,31 +1629,75 @@
   }
 
   // =========================================================================
-  // Mobile UX, Collapsible Toolbars & Focus Reader Mode
+  // Mobile UX, Ultra-Slim Bar, Overlay Drawers & Focus Reader Mode
   // =========================================================================
-  function initMobileUX() {
-    const isPhone = window.innerWidth <= 768;
-    const composerSplit = $('.composer-split');
+  function closeMobileControlsDrawers() {
+    $$('.controls-drawer.open').forEach((d) => d.classList.remove('open'));
+    $('#btn-slim-settings')?.classList.remove('active-state');
+  }
 
-    if (isPhone) {
-      $$('.collapsible-mobile').forEach((el) => el.classList.add('mobile-collapsed'));
-      if (composerSplit) composerSplit.setAttribute('data-cmode', 'preview');
-    } else if (composerSplit) {
-      composerSplit.setAttribute('data-cmode', 'split');
+  function handlePrimaryPlayAction() {
+    if (state.activeTab === 'orchestra') {
+      if (audioEngine.isPlaying) pauseXmlPlayback();
+      else startXmlPlayback();
+    } else if (state.activeTab === 'composer') {
+      if (audioEngine.isPlaying) stopAbcScore();
+      else playAbcScore();
+    } else if (state.activeTab === 'stage') {
+      toggleStageAutoScroll();
+    }
+  }
+
+  function handlePrimaryScrollAction() {
+    if (state.activeTab === 'orchestra') {
+      toggleXmlAutoScroll();
+    } else if (state.activeTab === 'stage') {
+      toggleStageAutoScroll();
+    } else if (state.activeTab === 'composer') {
+      const pane = $('.composer-preview-pane');
+      pane?.scrollBy({ top: pane.clientHeight * 0.6, behavior: 'smooth' });
+    }
+  }
+
+  function initMobileUX() {
+    const composerSplit = $('.composer-split');
+    if (composerSplit) {
+      composerSplit.setAttribute('data-cmode', isMobileViewport() ? 'preview' : 'split');
     }
 
-    $('#btn-toggle-orch-tools')?.addEventListener('click', () => {
-      $('#orch-toolbar')?.classList.toggle('mobile-collapsed');
+    // Slim bar controls
+    $('#btn-slim-play')?.addEventListener('click', handlePrimaryPlayAction);
+    $('#btn-slim-scroll')?.addEventListener('click', handlePrimaryScrollAction);
+    $('#btn-slim-prev-page')?.addEventListener('click', () => jumpStagePage(-1));
+    $('#btn-slim-next-page')?.addEventListener('click', () => jumpStagePage(1));
+
+    $('#mobile-part-select')?.addEventListener('change', (e) => {
+      const val = e.target.value;
+      state.selectedPartIds = val === '__ALL__' ? [] : [val];
+      renderPartFilterBar();
+      refreshOsmdRender();
     });
 
-    $('#btn-toggle-composer-tools')?.addEventListener('click', () => {
-      const collapsed = $('#composer-toolbar')?.classList.toggle('mobile-collapsed');
-      $('#abc-quick-toolbar')?.classList.toggle('mobile-collapsed', collapsed);
+    $('#btn-slim-settings')?.addEventListener('click', () => {
+      const activeDrawer = $(`#view-${state.activeTab} .controls-drawer`);
+      if (!activeDrawer) return;
+      const opening = !activeDrawer.classList.contains('open');
+      closeMobileControlsDrawers();
+      if (opening) {
+        activeDrawer.classList.add('open');
+        $('#btn-slim-settings').classList.add('active-state');
+      }
     });
 
-    $('#btn-toggle-stage-tools')?.addEventListener('click', () => {
-      const collapsed = $('#stage-toolbar')?.classList.toggle('mobile-collapsed');
-      $('#stage-annotation-bar')?.classList.toggle('mobile-collapsed', collapsed);
+    $$('.btn-close-mobile-drawer').forEach((btn) => {
+      btn.addEventListener('click', closeMobileControlsDrawers);
+    });
+
+    // Tapping score viewport closes any open overlay controls drawer automatically
+    ['#osmd-scroll-wrapper', '.composer-preview-pane', '#stage-scroll-container'].forEach((sel) => {
+      $(sel)?.addEventListener('pointerdown', () => {
+        if ($('.controls-drawer.open')) closeMobileControlsDrawers();
+      });
     });
 
     // Composer mobile view switcher (Preview / Edit / Split)
@@ -1637,33 +1712,12 @@
       });
     });
 
-    // Floating quick actions (Thumb reach on smartphone & Focus Reader Mode)
-    $('#btn-float-play')?.addEventListener('click', () => {
-      if (state.activeTab === 'orchestra') {
-        if (audioEngine.isPlaying) pauseXmlPlayback();
-        else startXmlPlayback();
-      } else if (state.activeTab === 'composer') {
-        if (audioEngine.isPlaying) stopAbcScore();
-        else playAbcScore();
-      } else if (state.activeTab === 'stage') {
-        toggleStageAutoScroll();
-      }
-    });
-
-    $('#btn-float-scroll')?.addEventListener('click', () => {
-      if (state.activeTab === 'orchestra') {
-        toggleXmlAutoScroll();
-      } else if (state.activeTab === 'stage') {
-        toggleStageAutoScroll();
-      } else if (state.activeTab === 'composer') {
-        const pane = $('.composer-preview-pane');
-        pane?.scrollBy({ top: pane.clientHeight * 0.6, behavior: 'smooth' });
-      }
-    });
-
+    // Focus Reader floating bar actions
+    $('#btn-float-play')?.addEventListener('click', handlePrimaryPlayAction);
+    $('#btn-float-scroll')?.addEventListener('click', handlePrimaryScrollAction);
     $('#btn-float-reader')?.addEventListener('click', toggleFocusReaderMode);
 
-    // Double-tap on score paper to enter/exit full-screen reader mode on mobile
+    // Double-tap on score paper to enter/exit 100% full-screen Focus Reader Mode
     ['#osmd-container', '#abc-paper', '#stage-pages-wrapper'].forEach((sel) => {
       let lastTap = 0;
       $(sel)?.addEventListener('touchend', (e) => {
@@ -1681,13 +1735,14 @@
   }
 
   function toggleFocusReaderMode() {
+    closeMobileControlsDrawers();
     const active = document.body.classList.toggle('focus-reader-mode');
     $('#btn-focus-reader')?.classList.toggle('active-state', active);
     const floatReaderIcon = $('#btn-float-reader i');
     if (floatReaderIcon) {
       floatReaderIcon.className = active ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
     }
-    showToast(active ? 'เปิดโหมดอ่านโน้ตเต็มจอ (แตะปุ่มมุมล่างขวาหรือแตะ 2 ครั้งเพื่อออก)' : 'แสดงแถบเครื่องมือปกติแล้ว');
+    showToast(active ? 'เปิดโหมดอ่านโน้ตเต็มจอ 100% (แตะปุ่มมุมล่างขวาหรือแตะ 2 ครั้งเพื่อออก)' : 'แสดงแถบเครื่องมือปกติแล้ว');
     if (state.activeTab === 'orchestra' && state.osmd) {
       setTimeout(() => {
         try { state.osmd.render(); } catch (_) {}
@@ -1696,6 +1751,35 @@
   }
 
   function syncFloatingBar() {
+    const slimBar = $('#mobile-slim-bar');
+    if (slimBar) {
+      slimBar.classList.toggle('hidden-on-library', state.activeTab === 'library');
+      $('#mobile-part-select')?.classList.toggle('hidden', state.activeTab !== 'orchestra');
+      $('#composer-mobile-tabs')?.classList.toggle('hidden', state.activeTab !== 'composer');
+      $('#slim-stage-pages')?.classList.toggle('hidden', state.activeTab !== 'stage');
+    }
+
+    const playing =
+      state.activeTab === 'stage' ? state.stageAutoScroll : audioEngine.isPlaying;
+    const scrolling =
+      (state.activeTab === 'orchestra' && state.xmlAutoScroll) ||
+      (state.activeTab === 'stage' && state.stageAutoScroll);
+
+    const slimPlay = $('#btn-slim-play');
+    if (slimPlay) {
+      slimPlay.innerHTML = playing
+        ? '<i class="fa-solid fa-pause"></i> <span>หยุด</span>'
+        : '<i class="fa-solid fa-play"></i> <span>เล่น</span>';
+      slimPlay.classList.toggle('btn-danger', playing);
+      slimPlay.classList.toggle('btn-success', !playing);
+    }
+
+    const slimScroll = $('#btn-slim-scroll');
+    if (slimScroll) {
+      slimScroll.classList.toggle('btn-accent', scrolling);
+      slimScroll.classList.toggle('btn-secondary', !scrolling);
+    }
+
     const bar = $('#floating-mobile-bar');
     if (!bar) return;
     if (state.activeTab === 'library') {
@@ -1707,17 +1791,11 @@
     const playBtn = $('#btn-float-play');
     const scrollBtn = $('#btn-float-scroll');
 
-    const playing =
-      state.activeTab === 'stage' ? state.stageAutoScroll : audioEngine.isPlaying;
     if (playBtn) {
       playBtn.innerHTML = playing
         ? '<i class="fa-solid fa-pause"></i>'
         : '<i class="fa-solid fa-play"></i>';
     }
-
-    const scrolling =
-      (state.activeTab === 'orchestra' && state.xmlAutoScroll) ||
-      (state.activeTab === 'stage' && state.stageAutoScroll);
     if (scrollBtn) {
       scrollBtn.classList.toggle('active-state', scrolling);
     }

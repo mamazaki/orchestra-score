@@ -22,7 +22,7 @@
   <script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.1/dist/abcjs-basic-min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/styles.css?v=1.3.0" />
 </head>
 <body>
   <!-- Top App Header -->
@@ -154,20 +154,48 @@
     </div>
   </section>
 
+  <!-- Mobile Ultra-Slim Bar (1 compact line so 85%+ of screen is pure sheet music) -->
+  <div id="mobile-slim-bar" class="mobile-slim-bar no-print">
+    <div class="slim-left">
+      <button id="btn-slim-play" class="btn btn-success btn-sm">
+        <i class="fa-solid fa-play"></i> <span>เล่น</span>
+      </button>
+      <button id="btn-slim-scroll" class="btn btn-secondary btn-sm">
+        <i class="fa-solid fa-angles-down"></i> <span>เลื่อน</span>
+      </button>
+    </div>
+
+    <div class="slim-center">
+      <select id="mobile-part-select" class="select-sm slim-select" title="เลือกพาร์ทที่แสดง"></select>
+      <div id="composer-mobile-tabs" class="composer-mobile-tabs hidden">
+        <button class="btn-chip active" data-cmode="preview">ดูโน้ต</button>
+        <button class="btn-chip" data-cmode="edit">เขียน</button>
+        <button class="btn-chip" data-cmode="split">2 จอ</button>
+      </div>
+      <div id="slim-stage-pages" class="slim-page-nav hidden">
+        <button id="btn-slim-prev-page" class="btn-sm"><i class="fa-solid fa-chevron-left"></i></button>
+        <span id="slim-page-text">0/0</span>
+        <button id="btn-slim-next-page" class="btn-sm"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+    </div>
+
+    <button id="btn-slim-settings" class="btn btn-primary btn-sm">
+      <i class="fa-solid fa-sliders"></i> <span>ตั้งค่า/เพลง</span>
+    </button>
+  </div>
+
   <!-- Main Workspace Views -->
   <main class="app-main">
     <!-- TAB 1: ORCHESTRA & BAND SCORE VIEWER (MusicXML) -->
     <section id="view-orchestra" class="tab-view active">
-      <!-- Mobile Compact Toggle Bar -->
-      <div class="mobile-tools-strip no-print">
-        <button id="btn-toggle-orch-tools" class="btn btn-secondary btn-sm">
-          <i class="fa-solid fa-sliders"></i> เครื่องมือ / เปลี่ยนเพลง / Transpose
-        </button>
-        <span id="mobile-orch-zoom-badge" class="badge-info">58%</span>
-      </div>
+      <div id="orch-drawer" class="controls-drawer no-print">
+        <div class="drawer-mobile-close-bar">
+          <span><i class="fa-solid fa-sliders"></i> ตั้งค่าเพลง พาร์ท &amp; Transpose</span>
+          <button type="button" class="btn-sm btn-danger btn-close-mobile-drawer"><i class="fa-solid fa-xmark"></i> ปิด</button>
+        </div>
 
-      <!-- Top Control Toolbar -->
-      <div id="orch-toolbar" class="toolbar-panel collapsible-mobile no-print">
+        <!-- Top Control Toolbar -->
+        <div id="orch-toolbar" class="toolbar-panel no-print">
         <div class="toolbar-group">
           <label class="field-label" for="select-sample-score"><i class="fa-solid fa-book-open"></i> เพลงตัวอย่าง:</label>
           <select id="select-sample-score" class="select-ctrl">
@@ -269,6 +297,7 @@
           </button>
         </div>
       </div>
+      </div>
 
       <!-- Score Sheet Viewport -->
       <div id="osmd-scroll-wrapper" class="score-viewport">
@@ -282,18 +311,13 @@
 
     <!-- TAB 2: SCORE COMPOSER (ABC STUDIO) -->
     <section id="view-composer" class="tab-view">
-      <div class="mobile-tools-strip no-print">
-        <div id="composer-mobile-tabs" class="composer-mobile-tabs">
-          <button class="btn-chip active" data-cmode="preview"><i class="fa-solid fa-music"></i> ดูโน้ต</button>
-          <button class="btn-chip" data-cmode="edit"><i class="fa-solid fa-pen"></i> เขียนโน้ต</button>
-          <button class="btn-chip" data-cmode="split">แบ่ง 2 จอ</button>
+      <div id="composer-drawer" class="controls-drawer no-print">
+        <div class="drawer-mobile-close-bar">
+          <span><i class="fa-solid fa-pen-nib"></i> เครื่องมือเขียนโน้ต &amp; เทมเพลต</span>
+          <button type="button" class="btn-sm btn-danger btn-close-mobile-drawer"><i class="fa-solid fa-xmark"></i> ปิด</button>
         </div>
-        <button id="btn-toggle-composer-tools" class="btn btn-secondary btn-sm">
-          <i class="fa-solid fa-sliders"></i> แถบเครื่องมือ
-        </button>
-      </div>
 
-      <div id="composer-toolbar" class="toolbar-panel collapsible-mobile no-print">
+        <div id="composer-toolbar" class="toolbar-panel no-print">
         <div class="toolbar-group">
           <label class="field-label" for="select-abc-template"><i class="fa-solid fa-wand-magic-sparkles"></i> เทมเพลต:</label>
           <select id="select-abc-template" class="select-ctrl">
@@ -320,7 +344,7 @@
       </div>
 
       <!-- Visual Quick-Insert Palette -->
-      <div id="abc-quick-toolbar" class="quick-insert-bar collapsible-mobile no-print">
+      <div id="abc-quick-toolbar" class="quick-insert-bar no-print">
         <div class="qi-group">
           <span class="qi-label">เสียงต่ำ-กลาง:</span>
           <button class="qi-btn" data-insert="C">โด (C)</button>
@@ -365,6 +389,7 @@
           <button class="qi-btn" data-insert="!fermata!">𝄐</button>
           <button class="qi-btn accent" id="btn-abc-add-voice">+ เพิ่มพาร์ท (V:)</button>
         </div>
+      </div>
       </div>
 
       <!-- Composer Split Screen -->
@@ -424,12 +449,13 @@
 
     <!-- TAB 3: STAGE TELEPROMPTER & PDF AUTO-SCROLLER -->
     <section id="view-stage" class="tab-view">
-      <div class="mobile-tools-strip no-print">
-        <button id="btn-toggle-stage-tools" class="btn btn-secondary btn-sm">
-          <i class="fa-solid fa-sliders"></i> เปิดไฟล์ PDF / ตั้งสปีด / ปากกา
-        </button>
-      </div>
-      <div id="stage-toolbar" class="toolbar-panel collapsible-mobile no-print">
+      <div id="stage-drawer" class="controls-drawer no-print">
+        <div class="drawer-mobile-close-bar">
+          <span><i class="fa-solid fa-scroll"></i> เครื่องมือ PDF / สปีด &amp; ปากกา</span>
+          <button type="button" class="btn-sm btn-danger btn-close-mobile-drawer"><i class="fa-solid fa-xmark"></i> ปิด</button>
+        </div>
+
+        <div id="stage-toolbar" class="toolbar-panel no-print">
         <div class="toolbar-group">
           <input type="file" id="input-stage-file" accept=".pdf,.png,.jpg,.jpeg,.webp" multiple hidden />
           <button id="btn-stage-upload" class="btn btn-primary">
@@ -477,7 +503,7 @@
       </div>
 
       <!-- Stage Annotation Bar -->
-      <div id="stage-annotation-bar" class="annotation-bar collapsible-mobile no-print">
+      <div id="stage-annotation-bar" class="annotation-bar no-print">
         <button id="btn-stage-draw-toggle" class="btn btn-secondary btn-sm">
           <i class="fa-solid fa-pen"></i> โหมดขีดเขียนบนโน้ต: ปิด
         </button>
@@ -493,6 +519,7 @@
           <button id="btn-stage-clear-draw" class="btn-chip danger"><i class="fa-solid fa-trash"></i> ล้างรอยขีดเขียน</button>
         </div>
         <span class="hint-text"><i class="fa-solid fa-shoe-prints"></i> รองรับแป้นเหยียบ Bluetooth (PageUp / PageDown / Arrow / Space)</span>
+      </div>
       </div>
 
       <div id="stage-scroll-container" class="stage-viewport">
@@ -613,9 +640,9 @@
   <div id="toast-container" class="toast-container no-print"></div>
 
   <!-- Scripts -->
-  <script src="./js/sample-scores.js"></script>
-  <script src="./js/audio-engine.js"></script>
-  <script src="./js/xml-processor.js"></script>
-  <script src="./js/app.js"></script>
+  <script src="./js/sample-scores.js?v=1.3.0"></script>
+  <script src="./js/audio-engine.js?v=1.3.0"></script>
+  <script src="./js/xml-processor.js?v=1.3.0"></script>
+  <script src="./js/app.js?v=1.3.0"></script>
 </body>
 </html>

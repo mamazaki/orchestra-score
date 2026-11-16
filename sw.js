@@ -1,12 +1,12 @@
-const CACHE_NAME = 'maestroscroll-v1.2.0';
+const CACHE_NAME = 'maestroscroll-v1.3.0';
 const CORE_ASSETS = [
   './',
   './index.html',
-  './css/styles.css',
-  './js/sample-scores.js',
-  './js/audio-engine.js',
-  './js/xml-processor.js',
-  './js/app.js',
+  './css/styles.css?v=1.3.0',
+  './js/sample-scores.js?v=1.3.0',
+  './js/audio-engine.js?v=1.3.0',
+  './js/xml-processor.js?v=1.3.0',
+  './js/app.js?v=1.3.0',
   './manifest.json'
 ];
 
@@ -28,28 +28,18 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  const url = new URL(event.request.url);
 
-  // Network-first for external CDNs with cache fallback, Cache-first for local core assets
-  if (url.origin === self.location.origin) {
-    event.respondWith(
-      caches.match(event.request).then((cached) => {
-        return cached || fetch(event.request).then((res) => {
+  // Network-first strategy for all requests so mobile & desktop always get latest UI/scores,
+  // falling back to offline cache when disconnected.
+  event.respondWith(
+    fetch(event.request)
+      .then((res) => {
+        if (res && res.status === 200) {
           const clone = res.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return res;
-        });
+        }
+        return res;
       })
-    );
-  } else {
-    event.respondWith(
-      fetch(event.request)
-        .then((res) => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return res;
-        })
-        .catch(() => caches.match(event.request))
-    );
-  }
+      .catch(() => caches.match(event.request))
+  );
 });
