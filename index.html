@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="description" content="MaestroScroll — เว็บแอปเขียนและเปิดอ่านโน้ตเพลงวงดุริยางค์และวงดนตรี พร้อมแยกพาร์ท เลื่อนโน้ตอัตโนมัติ เมโทรนอม และตั้งสาย รันบน GitHub Pages" />
+  <title>MaestroScroll — สตูดิโอโน้ตเพลงวงดุริยางค์ &amp; Auto-Scroll</title>
+
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236366f1'/%3E%3Ctext x='32' y='45' font-size='36' text-anchor='middle' fill='white'%3E%F0%9F%8E%BC%3C/text%3E%3C/svg%3E" />
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Sheet Music & PDF Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/opensheetmusicdisplay@1.8.9/build/opensheetmusicdisplay.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.1/dist/abcjs-basic-min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+  <link rel="stylesheet" href="./css/styles.css" />
+</head>
+<body>
+  <!-- Top App Header -->
+  <header class="app-header no-print">
+    <div class="brand">
+      <div class="brand-logo"><i class="fa-solid fa-music"></i></div>
+      <div class="brand-text">
+        <h1>MaestroScroll</h1>
+        <span class="brand-sub">Orchestra &amp; Band Studio</span>
+      </div>
+    </div>
+
+    <nav class="main-nav" aria-label="เมนูหลัก">
+      <button class="nav-tab active" data-tab="orchestra">
+        <i class="fa-solid fa-sliders"></i>
+        <span>สกอร์วง &amp; แยกพาร์ท</span>
+      </button>
+      <button class="nav-tab" data-tab="composer">
+        <i class="fa-solid fa-pen-nib"></i>
+        <span>เขียนโน้ตเพลง</span>
+      </button>
+      <button class="nav-tab" data-tab="stage">
+        <i class="fa-solid fa-scroll"></i>
+        <span>โหมดเวที (PDF/Scroll)</span>
+      </button>
+      <button class="nav-tab" data-tab="library">
+        <i class="fa-solid fa-folder-open"></i>
+        <span>คลังเพลง &amp; เซ็ตลิสต์</span>
+      </button>
+    </nav>
+
+    <div class="header-actions">
+      <button id="btn-toggle-metronome" class="icon-btn accent-outline" title="เมโทรนอม &amp; ตั้งสาย (M)">
+        <i class="fa-solid fa-stopwatch"></i>
+        <span class="hide-sm">เมโทรนอม &amp; ตั้งสาย</span>
+      </button>
+      <button id="btn-toggle-night-score" class="icon-btn" title="สลับสีกระดาษโน้ต (ขาว / โหมดกลางคืน)">
+        <i class="fa-solid fa-circle-half-stroke"></i>
+      </button>
+      <button id="btn-toggle-theme" class="icon-btn" title="สลับธีมหน้าจอ (มืด / สว่าง)">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+      <button id="btn-fullscreen" class="icon-btn" title="เต็มจอ (F)">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+      <button id="btn-shortcuts-help" class="icon-btn" title="คีย์ลัดและแป้นเหยียบ">
+        <i class="fa-solid fa-keyboard"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Collapsible Metronome & Tuner Drawer -->
+  <section id="metronome-drawer" class="metronome-drawer collapsed no-print">
+    <div class="drawer-grid">
+      <!-- Metronome Card -->
+      <div class="drawer-card">
+        <div class="drawer-card-header">
+          <h3><i class="fa-solid fa-stopwatch"></i> เมโทรนอม (Metronome)</h3>
+          <div id="metro-beat-leds" class="beat-leds"></div>
+        </div>
+        <div class="metro-controls">
+          <div class="bpm-readout-group">
+            <button class="btn-sm btn-bpm-step" data-delta="-5">-5</button>
+            <button class="btn-sm btn-bpm-step" data-delta="-1">-1</button>
+            <div class="bpm-input-wrap">
+              <input id="metro-bpm-input" type="number" min="30" max="240" value="120" />
+              <span>BPM</span>
+            </div>
+            <button class="btn-sm btn-bpm-step" data-delta="1">+1</button>
+            <button class="btn-sm btn-bpm-step" data-delta="5">+5</button>
+          </div>
+          <input id="metro-bpm-slider" type="range" min="30" max="240" value="120" class="slider-full" />
+          <div class="metro-bottom-row">
+            <select id="metro-timesig" class="select-sm" title="อัตราจังหวะ">
+              <option value="4">4/4</option>
+              <option value="3">3/4</option>
+              <option value="2">2/4</option>
+              <option value="6">6/8</option>
+            </select>
+            <button id="btn-tap-tempo" class="btn btn-secondary btn-sm">
+              <i class="fa-solid fa-hand-pointer"></i> Tap Tempo
+            </button>
+            <button id="btn-metro-toggle" class="btn btn-primary btn-sm">
+              <i class="fa-solid fa-play"></i> เริ่มเคาะ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reference Tone & Mic Tuner Card -->
+      <div class="drawer-card">
+        <div class="drawer-card-header">
+          <h3><i class="fa-solid fa-wave-square"></i> ตั้งสายวงดุริยางค์ (Tuning &amp; Mic Tuner)</h3>
+          <button id="btn-mic-tuner" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-microphone"></i> เปิดไมค์ตั้งสาย
+          </button>
+        </div>
+        <div class="tuner-body">
+          <div class="tuner-gauge-box">
+            <div class="tuner-note-display">
+              <span id="tuner-note">--</span>
+              <small id="tuner-freq">0.0 Hz</small>
+            </div>
+            <div class="tuner-meter">
+              <div class="tuner-scale">
+                <span>-50</span>
+                <span class="center-mark">0</span>
+                <span>+50</span>
+              </div>
+              <div class="tuner-track">
+                <div id="tuner-needle" class="tuner-needle"></div>
+              </div>
+              <div id="tuner-cents-text" class="tuner-cents-text">พร้อมวัดเสียง</div>
+            </div>
+          </div>
+          <div class="ref-tones-row">
+            <span class="ref-label">เสียงเทียบ:</span>
+            <button class="btn-chip btn-ref-tone" data-freq="466.16" title="มาตรฐานวงดุริยางค์ / เครื่องลม">Bb4 (466Hz)</button>
+            <button class="btn-chip btn-ref-tone" data-freq="440" title="มาตรฐานวงออร์เคสตรา">A4 (440Hz)</button>
+            <button class="btn-chip btn-ref-tone" data-freq="442" title="วงออร์เคสตราสากลบางวง">A4 (442Hz)</button>
+            <button class="btn-chip btn-ref-tone" data-freq="349.23" title="ฮอร์น">F4 (349Hz)</button>
+            <button id="btn-stop-ref-tone" class="btn-chip danger" title="หยุดเสียงเทียบ"><i class="fa-solid fa-stop"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace Views -->
+  <main class="app-main">
+    <!-- TAB 1: ORCHESTRA & BAND SCORE VIEWER (MusicXML) -->
+    <section id="view-orchestra" class="tab-view active">
+      <!-- Top Control Toolbar -->
+      <div class="toolbar-panel no-print">
+        <div class="toolbar-group">
+          <label class="field-label" for="select-sample-score"><i class="fa-solid fa-book-open"></i> เพลงตัวอย่าง:</label>
+          <select id="select-sample-score" class="select-ctrl">
+            <option value="ode_to_joy_orchestra">Symphony No.9 "Ode to Joy" (วง 5 พาร์ท)</option>
+            <option value="royal_band_chorale">Warm-up Chorale (แบบฝึกวงดุริยางค์ 4 พาร์ท)</option>
+            <option value="victory_fanfare_march">Victory Fanfare March (มาร์ช 4 พาร์ท)</option>
+          </select>
+
+          <input type="file" id="input-musicxml-file" accept=".xml,.musicxml,.mxl" hidden />
+          <button id="btn-upload-xml" class="btn btn-secondary">
+            <i class="fa-solid fa-file-arrow-up"></i> เปิดไฟล์ MusicXML (.xml/.mxl)
+          </button>
+        </div>
+
+        <div class="toolbar-group">
+          <label class="field-label" for="select-transpose"><i class="fa-solid fa-arrows-up-down"></i> Transpose:</label>
+          <select id="select-transpose" class="select-ctrl">
+            <option value="0">Concert Pitch (0)</option>
+            <option value="2">Bb Instrument (+2 เช่น Trumpet / Clarinet)</option>
+            <option value="9">Eb Instrument (+9/-3 เช่น Alto Sax)</option>
+            <option value="7">F Instrument (+7 เช่น French Horn)</option>
+            <option value="-2">ลดคีย์ 1 เสียงเต็ม (-2)</option>
+            <option value="custom">กำหนดเอง...</option>
+          </select>
+          <input id="custom-transpose-input" type="number" min="-12" max="12" value="0" class="input-mini hidden" title="จำนวน Semitones (-12 ถึง +12)" />
+
+          <div class="zoom-group">
+            <button id="btn-zoom-out" class="btn-sm" title="ย่อ"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+            <span id="zoom-label">85%</span>
+            <button id="btn-zoom-in" class="btn-sm" title="ขยาย"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+          </div>
+
+          <button id="btn-save-xml-library" class="btn btn-secondary" title="บันทึกลงคลังเพลงในเครื่อง">
+            <i class="fa-solid fa-bookmark"></i> บันทึก
+          </button>
+          <button id="btn-print-score" class="btn btn-primary">
+            <i class="fa-solid fa-print"></i> พิมพ์พาร์ทนี้
+          </button>
+        </div>
+      </div>
+
+      <!-- Part Selection Bar -->
+      <div class="parts-bar no-print">
+        <div class="parts-bar-left">
+          <span class="parts-title"><i class="fa-solid fa-users-viewfinder"></i> เลือกพาร์ทที่แสดง:</span>
+          <div id="part-filter-bar" class="part-pills"></div>
+        </div>
+        <label class="checkbox-pill" title="เลือกแสดงพร้อมกันหลายพาร์ท">
+          <input type="checkbox" id="chk-multi-part" />
+          <span>เลือกหลายพาร์ท</span>
+        </label>
+      </div>
+
+      <!-- Playback & Auto-Scroll Transport -->
+      <div class="transport-bar no-print">
+        <div class="transport-left">
+          <button id="btn-xml-play" class="btn btn-success">
+            <i class="fa-solid fa-play"></i> เล่นเสียง
+          </button>
+          <button id="btn-xml-pause" class="btn btn-warning" disabled>
+            <i class="fa-solid fa-pause"></i> พัก
+          </button>
+          <button id="btn-xml-stop" class="btn btn-danger" disabled>
+            <i class="fa-solid fa-stop"></i> หยุด
+          </button>
+
+          <div class="divider-v"></div>
+
+          <label class="field-label" for="xml-tempo-bpm">BPM:</label>
+          <input id="xml-tempo-bpm" type="number" min="30" max="240" value="110" class="input-mini" />
+          <select id="xml-tempo-mult" class="select-sm" title="ความเร็วฝึกซ้อม">
+            <option value="0.5">0.5x ช้ามาก</option>
+            <option value="0.75">0.75x ซ้อมช้า</option>
+            <option value="1" selected>1.0x ปกติ</option>
+            <option value="1.25">1.25x เร็วขึ้น</option>
+          </select>
+
+          <span id="xml-measure-progress" class="badge-info">ห้องที่ 1 / --</span>
+        </div>
+
+        <div class="transport-right">
+          <button id="btn-xml-autoscroll" class="btn btn-secondary">
+            <i class="fa-solid fa-angles-down"></i> Auto-Scroll: ปิด
+          </button>
+          <div class="speed-slider-wrap">
+            <small>สปีดเลื่อน</small>
+            <input id="xml-autoscroll-speed" type="range" min="5" max="100" value="28" />
+          </div>
+          <button id="btn-open-mixer" class="btn btn-accent">
+            <i class="fa-solid fa-sliders"></i> มิกเซอร์แยกพาร์ท
+          </button>
+        </div>
+      </div>
+
+      <!-- Score Sheet Viewport -->
+      <div id="osmd-scroll-wrapper" class="score-viewport">
+        <div id="osmd-loading" class="loading-overlay hidden">
+          <div class="spinner"></div>
+          <p>กำลังจัดเรียงบรรทัด 5 เส้น...</p>
+        </div>
+        <div id="osmd-container" class="score-paper"></div>
+      </div>
+    </section>
+
+    <!-- TAB 2: SCORE COMPOSER (ABC STUDIO) -->
+    <section id="view-composer" class="tab-view">
+      <div class="toolbar-panel no-print">
+        <div class="toolbar-group">
+          <label class="field-label" for="select-abc-template"><i class="fa-solid fa-wand-magic-sparkles"></i> เทมเพลต:</label>
+          <select id="select-abc-template" class="select-ctrl">
+            <option value="wind_quartet">วงเครื่องลม 4 พาร์ท (Flute, Clarinet, Trumpet, Bass)</option>
+            <option value="string_quartet">วงเครื่องสาย (String Quartet 4 พาร์ท)</option>
+            <option value="marching_cadence">มาร์ชชิ่งแบนด์ (Marching Lead &amp; Bass)</option>
+            <option value="solo_lead">โน้ตเดี่ยว + คอร์ด (Solo Lead Sheet)</option>
+          </select>
+          <button id="btn-abc-play" class="btn btn-success"><i class="fa-solid fa-play"></i> ฟังเสียง</button>
+          <button id="btn-abc-stop" class="btn btn-danger"><i class="fa-solid fa-stop"></i> หยุด</button>
+          <label class="checkbox-pill">
+            <input type="checkbox" id="chk-abc-loop" />
+            <span>วนซ้ำ</span>
+          </label>
+        </div>
+
+        <div class="toolbar-group">
+          <button id="btn-abc-save-library" class="btn btn-secondary"><i class="fa-solid fa-bookmark"></i> บันทึกเข้าคลัง</button>
+          <button id="btn-abc-export-file" class="btn btn-secondary"><i class="fa-solid fa-download"></i> โหลด .abc</button>
+          <button id="btn-abc-export-svg" class="btn btn-secondary"><i class="fa-solid fa-image"></i> โหลด .svg</button>
+          <button id="btn-abc-print" class="btn btn-primary"><i class="fa-solid fa-print"></i> พิมพ์</button>
+        </div>
+      </div>
+
+      <!-- Visual Quick-Insert Palette -->
+      <div id="abc-quick-toolbar" class="quick-insert-bar no-print">
+        <div class="qi-group">
+          <span class="qi-label">เสียงต่ำ-กลาง:</span>
+          <button class="qi-btn" data-insert="C">โด (C)</button>
+          <button class="qi-btn" data-insert="D">เร (D)</button>
+          <button class="qi-btn" data-insert="E">มี (E)</button>
+          <button class="qi-btn" data-insert="F">ฟา (F)</button>
+          <button class="qi-btn" data-insert="G">ซอล (G)</button>
+          <button class="qi-btn" data-insert="A">ลา (A)</button>
+          <button class="qi-btn" data-insert="B">ที (B)</button>
+        </div>
+        <div class="qi-group">
+          <span class="qi-label">ออกเทฟสูง:</span>
+          <button class="qi-btn" data-insert="c">c</button>
+          <button class="qi-btn" data-insert="d">d</button>
+          <button class="qi-btn" data-insert="e">e</button>
+          <button class="qi-btn" data-insert="f">f</button>
+          <button class="qi-btn" data-insert="g">g</button>
+          <button class="qi-btn" data-insert="z">หยุด (z)</button>
+        </div>
+        <div class="qi-group">
+          <span class="qi-label">แปลงเสียง &amp; ค่าตัวโน้ต:</span>
+          <button class="qi-btn" data-insert="^">♯</button>
+          <button class="qi-btn" data-insert="_">♭</button>
+          <button class="qi-btn" data-insert="=">♮</button>
+          <button class="qi-btn" data-insert="4" title="ตัวกลม (4 จังหวะ)">𝅝 (4)</button>
+          <button class="qi-btn" data-insert="2" title="ตัวขาว (2 จังหวะ)">𝅗𝅥 (2)</button>
+          <button class="qi-btn" data-insert="" title="ตัวดำ (1 จังหวะ)">𝅘𝅥 (1)</button>
+          <button class="qi-btn" data-insert="/2" title="เขบ็ต 1 ชั้น">𝅘𝅥𝅮 (/2)</button>
+          <button class="qi-btn" data-insert="/4" title="เขบ็ต 2 ชั้น">𝅘𝅥𝅯 (/4)</button>
+          <button class="qi-btn" data-insert="3/2" title="ประจุด">ประจุด</button>
+        </div>
+        <div class="qi-group">
+          <span class="qi-label">กั้นห้อง &amp; ไดนามิก:</span>
+          <button class="qi-btn" data-insert=" | ">|</button>
+          <button class="qi-btn" data-insert=" || ">||</button>
+          <button class="qi-btn" data-insert=" |: ">|:</button>
+          <button class="qi-btn" data-insert=" :| ">:|</button>
+          <button class="qi-btn" data-insert=" |] ">|]</button>
+          <button class="qi-btn" data-insert="!pp!">pp</button>
+          <button class="qi-btn" data-insert="!mf!">mf</button>
+          <button class="qi-btn" data-insert="!ff!">ff</button>
+          <button class="qi-btn" data-insert="!fermata!">𝄐</button>
+          <button class="qi-btn accent" id="btn-abc-add-voice">+ เพิ่มพาร์ท (V:)</button>
+        </div>
+      </div>
+
+      <!-- Composer Split Screen -->
+      <div class="composer-split">
+        <div class="composer-editor-pane no-print">
+          <div class="meta-grid">
+            <div class="meta-field">
+              <label for="abc-meta-title">ชื่อเพลง (T:)</label>
+              <input id="abc-meta-title" type="text" placeholder="เช่น มาร์ชประจำโรงเรียน" />
+            </div>
+            <div class="meta-field">
+              <label for="abc-meta-composer">ผู้เรียบเรียง (C:)</label>
+              <input id="abc-meta-composer" type="text" placeholder="ชื่อผู้แต่ง/เรียบเรียง" />
+            </div>
+            <div class="meta-field-sm">
+              <label for="abc-meta-meter">จังหวะ (M:)</label>
+              <select id="abc-meta-meter">
+                <option value="4/4">4/4</option>
+                <option value="3/4">3/4</option>
+                <option value="2/4">2/4</option>
+                <option value="6/8">6/8</option>
+                <option value="2/2">2/2</option>
+              </select>
+            </div>
+            <div class="meta-field-sm">
+              <label for="abc-meta-key">คีย์ (K:)</label>
+              <select id="abc-meta-key">
+                <option value="C">C Maj</option>
+                <option value="G">G Maj (1♯)</option>
+                <option value="D">D Maj (2♯)</option>
+                <option value="F">F Maj (1♭)</option>
+                <option value="Bb">Bb Maj (2♭)</option>
+                <option value="Eb">Eb Maj (3♭)</option>
+                <option value="Am">A Min</option>
+                <option value="Dm">D Min</option>
+              </select>
+            </div>
+            <div class="meta-field-sm">
+              <label for="abc-meta-tempo">BPM (Q:)</label>
+              <input id="abc-meta-tempo" type="number" min="40" max="240" value="110" />
+            </div>
+            <div class="meta-field-sm">
+              <label for="abc-visual-transpose">Transpose:</label>
+              <input id="abc-visual-transpose" type="number" min="-12" max="12" value="0" />
+            </div>
+          </div>
+
+          <textarea id="abc-editor" spellcheck="false" placeholder="พิมพ์โน้ตแบบ ABC Notation หรือกดปุ่มด้านบนเพื่อแทรกโน้ต..."></textarea>
+          <div id="abc-warnings" class="abc-warnings"></div>
+        </div>
+
+        <div class="composer-preview-pane">
+          <div id="abc-paper" class="score-paper"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: STAGE TELEPROMPTER & PDF AUTO-SCROLLER -->
+    <section id="view-stage" class="tab-view">
+      <div class="toolbar-panel no-print">
+        <div class="toolbar-group">
+          <input type="file" id="input-stage-file" accept=".pdf,.png,.jpg,.jpeg,.webp" multiple hidden />
+          <button id="btn-stage-upload" class="btn btn-primary">
+            <i class="fa-solid fa-file-pdf"></i> เปิด PDF / ภาพสแกนโน้ต
+          </button>
+          <button id="btn-stage-demo" class="btn btn-secondary">
+            <i class="fa-solid fa-wand-sparkles"></i> โหลดโน้ตทดสอบ
+          </button>
+
+          <div class="divider-v"></div>
+
+          <button id="btn-stage-scroll-toggle" class="btn btn-success">
+            <i class="fa-solid fa-play"></i> เริ่ม Auto-Scroll (Space)
+          </button>
+          <button id="btn-stage-top" class="btn btn-secondary" title="กลับขึ้นด้านบน">
+            <i class="fa-solid fa-arrow-up-to-line"></i>
+          </button>
+
+          <div class="speed-slider-wrap">
+            <small>ความเร็ว: <strong id="stage-speed-val">35</strong> px/s</small>
+            <input id="stage-scroll-speed" type="range" min="5" max="150" value="35" />
+          </div>
+
+          <label class="checkbox-pill" title="นับถอยหลัง 4 จังหวะก่อนเลื่อน">
+            <input type="checkbox" id="chk-stage-countin" />
+            <span>Count-in</span>
+          </label>
+        </div>
+
+        <div class="toolbar-group">
+          <div class="bpm-calc-inline" title="คำนวณความเร็ว Scroll อัตโนมัติจากจังหวะเพลง">
+            <span>ซิงค์ BPM:</span>
+            <input id="stage-sync-bpm" type="number" min="40" max="220" value="100" class="input-mini" />
+            <span>ห้อง/หน้า:</span>
+            <input id="stage-sync-bars" type="number" min="4" max="64" value="24" class="input-mini" />
+            <button id="btn-stage-apply-bpm" class="btn-sm btn-accent">คำนวณสปีด</button>
+          </div>
+
+          <div class="divider-v"></div>
+
+          <button id="btn-stage-prev-page" class="btn-sm" title="หน้าก่อน (PageUp / ArrowLeft)"><i class="fa-solid fa-chevron-left"></i></button>
+          <span id="stage-page-info" class="badge-info">หน้า 0 / 0</span>
+          <button id="btn-stage-next-page" class="btn-sm" title="หน้าถัดไป (PageDown / ArrowRight)"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Stage Annotation Bar -->
+      <div class="annotation-bar no-print">
+        <button id="btn-stage-draw-toggle" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-pen"></i> โหมดขีดเขียนบนโน้ต: ปิด
+        </button>
+        <div id="stage-draw-tools" class="draw-tools hidden">
+          <button class="btn-chip btn-draw-tool active" data-tool="pen"><i class="fa-solid fa-pen"></i> ปากกา</button>
+          <button class="btn-chip btn-draw-tool" data-tool="highlighter"><i class="fa-solid fa-highlighter"></i> ไฮไลต์</button>
+          <button class="btn-chip btn-draw-tool" data-tool="eraser"><i class="fa-solid fa-eraser"></i> ยางลบ</button>
+          <div class="divider-v"></div>
+          <button class="color-dot active" data-color="#ef4444" style="background:#ef4444" title="แดง"></button>
+          <button class="color-dot" data-color="#2563eb" style="background:#2563eb" title="น้ำเงิน"></button>
+          <button class="color-dot" data-color="#eab308" style="background:#eab308" title="เหลือง"></button>
+          <button class="color-dot" data-color="#16a34a" style="background:#16a34a" title="เขียว"></button>
+          <button id="btn-stage-clear-draw" class="btn-chip danger"><i class="fa-solid fa-trash"></i> ล้างรอยขีดเขียน</button>
+        </div>
+        <span class="hint-text"><i class="fa-solid fa-shoe-prints"></i> รองรับแป้นเหยียบ Bluetooth (PageUp / PageDown / Arrow / Space)</span>
+      </div>
+
+      <div id="stage-scroll-container" class="stage-viewport">
+        <div id="stage-guide-line" class="stage-guide-line"></div>
+        <div id="stage-countin-overlay" class="countin-overlay hidden">4</div>
+        <div id="stage-pages-wrapper" class="stage-pages-wrapper">
+          <div class="empty-stage">
+            <i class="fa-solid fa-file-pdf"></i>
+            <h3>ยังไม่ได้เลือกไฟล์โน้ต PDF หรือรูปภาพ</h3>
+            <p>กดปุ่ม "เปิด PDF / ภาพสแกนโน้ต" หรือ "โหลดโน้ตทดสอบ" ด้านบนได้เลยค่ะ</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: LIBRARY & SETLIST MANAGER -->
+    <section id="view-library" class="tab-view">
+      <div class="library-grid">
+        <!-- Saved Scores Column -->
+        <div class="library-card">
+          <div class="card-header">
+            <h2><i class="fa-solid fa-music"></i> คลังโน้ตเพลงที่บันทึกไว้</h2>
+            <div class="card-actions">
+              <button id="btn-export-library-json" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-file-export"></i> ส่งออก .json
+              </button>
+              <input type="file" id="input-import-library-json" accept=".json" hidden />
+              <button id="btn-import-library-json" class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-file-import"></i> นำเข้า .json
+              </button>
+            </div>
+          </div>
+          <p class="card-desc">บันทึกโน้ต MusicXML หรือ ABC จากหน้าเขียนเพลงไว้ในเบราว์เซอร์ (Offline) และส่งออกไฟล์ .json เพื่อแชร์ให้สมาชิกในวงหรืออัปขึ้น GitHub ได้เลย</p>
+          <div id="library-list" class="item-list"></div>
+        </div>
+
+        <!-- Setlist Column -->
+        <div class="library-card">
+          <div class="card-header">
+            <h2><i class="fa-solid fa-list-ol"></i> เซ็ตลิสต์ซ้อม / แสดงสด (Setlist)</h2>
+            <div class="card-actions">
+              <select id="select-setlist" class="select-sm"></select>
+              <button id="btn-delete-setlist" class="btn btn-danger btn-sm" title="ลบเซ็ตลิสต์นี้"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+          <div class="new-setlist-row">
+            <input id="input-setlist-name" type="text" placeholder="ตั้งชื่อเซ็ตลิสต์ใหม่ (เช่น งานวันสถาปนา)" />
+            <button id="btn-new-setlist" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> สร้างเซ็ตลิสต์</button>
+          </div>
+          <div id="setlist-list" class="item-list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal: Instrument Mixer -->
+  <div id="modal-mixer" class="modal hidden no-print" role="dialog" aria-modal="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-sliders"></i> มิกเซอร์แยกพาร์ทเครื่องดนตรี (Rehearsal Mixer)</h3>
+        <button class="modal-close" data-close="modal-mixer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">กด Mute (ปิดเสียง) พาร์ทตัวเองเพื่อฝึกเล่นคลอไปกับวง หรือกด Solo (ฟังเฉพาะพาร์ท) เพื่อแกะไลน์เครื่องดนตรีค่ะ</p>
+        <div id="mixer-channels" class="mixer-channels"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-mixer-reset" class="btn btn-secondary">รีเซ็ตทุกพาร์ท</button>
+        <button class="btn btn-primary" data-close="modal-mixer">ตกลง</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Keyboard & Pedal Shortcuts -->
+  <div id="modal-shortcuts" class="modal hidden no-print" role="dialog" aria-modal="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-keyboard"></i> คีย์ลัด &amp; การต่อแป้นเหยียบ (Bluetooth Pedal)</h3>
+        <button class="modal-close" data-close="modal-shortcuts"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <table class="shortcuts-table">
+          <thead>
+            <tr><th>ปุ่ม / อุปกรณ์</th><th>การทำงาน</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><kbd>Space</kbd></td><td>เริ่ม / หยุด เสียงเพลง หรือ Auto-Scroll</td></tr>
+            <tr><td><kbd>PageDown</kbd> / <kbd>→</kbd></td><td>เลื่อนลง / หน้าถัดไป (มาตรฐาน Bluetooth Pedal)</td></tr>
+            <tr><td><kbd>PageUp</kbd> / <kbd>←</kbd></td><td>เลื่อนขึ้น / ย้อนหน้าก่อน</td></tr>
+            <tr><td><kbd>M</kbd></td><td>เปิด / ปิด เสียงเมโทรนอม</td></tr>
+            <tr><td><kbd>F</kbd></td><td>เปิด / ปิด โหมดเต็มจอ (Fullscreen)</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>ปิดหน้าต่าง Popup / ออกจากเต็มจอ</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" data-close="modal-shortcuts">เข้าใจแล้ว</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container no-print"></div>
+
+  <!-- Scripts -->
+  <script src="./js/sample-scores.js"></script>
+  <script src="./js/audio-engine.js"></script>
+  <script src="./js/xml-processor.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
