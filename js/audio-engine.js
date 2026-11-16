@@ -67,7 +67,8 @@ class MaestroAudioEngine {
 
   static guessTimbre(partName = '') {
     const n = partName.toLowerCase();
-    if (/flute|piccolo|oboe|clarinet|bassoon|sax|recorder/.test(n)) return 'woodwind';
+    if (/sax|tenor\s*sax|alto\s*sax|bari\s*sax|soprano\s*sax/.test(n)) return 'saxophone';
+    if (/flute|piccolo|oboe|clarinet|bassoon|recorder/.test(n)) return 'woodwind';
     if (/trumpet|cornet|horn|trombone|tuba|euphonium|brass|sousaphone/.test(n)) return 'brass';
     if (/violin|viola|cello|contrabass|string/.test(n)) return 'strings';
     if (/drum|snare|perc|timpani|cymbal/.test(n)) return 'percussion';
@@ -89,7 +90,56 @@ class MaestroAudioEngine {
     const gainNode = ctx.createGain();
     const filter = ctx.createBiquadFilter();
 
-    if (timbre === 'woodwind') {
+    if (timbre === 'saxophone') {
+      // Warm expressive reed timbre (sawtooth + sub triangle + gentle vibrato)
+      const oscMain = ctx.createOscillator();
+      const oscBody = ctx.createOscillator();
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      const bodyGain = ctx.createGain();
+
+      oscMain.type = 'sawtooth';
+      oscBody.type = 'triangle';
+      oscMain.frequency.setValueAtTime(freq, startTime);
+      oscBody.frequency.setValueAtTime(freq, startTime);
+
+      // Vibrato engages gently after initial attack
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(5.2, startTime);
+      lfoGain.gain.setValueAtTime(0, startTime);
+      lfoGain.gain.linearRampToValueAtTime(freq * 0.006, startTime + Math.min(0.25, dur * 0.4));
+      lfo.connect(lfoGain);
+      lfoGain.connect(oscMain.frequency);
+      lfoGain.connect(oscBody.frequency);
+
+      filter.type = 'lowpass';
+      filter.Q.setValueAtTime(2.6, startTime);
+      filter.frequency.setValueAtTime(Math.max(500, freq * 1.8), startTime);
+      filter.frequency.linearRampToValueAtTime(Math.min(3600, freq * 4.2), startTime + 0.055);
+      filter.frequency.exponentialRampToValueAtTime(Math.max(650, freq * 2.5), startTime + dur);
+
+      bodyGain.gain.setValueAtTime(0.45, startTime);
+      gainNode.gain.setValueAtTime(0.0001, startTime);
+      gainNode.gain.linearRampToValueAtTime(vol * 1.15, startTime + 0.045);
+      gainNode.gain.setValueAtTime(vol * 0.95, startTime + Math.max(0.05, dur - 0.05));
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + dur);
+
+      oscMain.connect(filter);
+      oscBody.connect(bodyGain);
+      bodyGain.connect(filter);
+      filter.connect(gainNode);
+      gainNode.connect(this.masterGain);
+
+      oscMain.start(startTime);
+      oscBody.start(startTime);
+      lfo.start(startTime);
+      oscMain.stop(startTime + dur + 0.04);
+      oscBody.stop(startTime + dur + 0.04);
+      lfo.stop(startTime + dur + 0.04);
+      this.trackOsc(oscMain);
+      this.trackOsc(oscBody);
+      this.trackOsc(lfo);
+    } else if (timbre === 'woodwind') {
       const osc = ctx.createOscillator();
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(freq, startTime);

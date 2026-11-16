@@ -426,7 +426,7 @@
     });
 
     // Load default initial sample
-    const initial = window.MAESTRO_SAMPLES.musicxml.ode_to_joy_orchestra;
+    const initial = window.MAESTRO_SAMPLES.musicxml.tenor_midnight_ballad || window.MAESTRO_SAMPLES.musicxml.ode_to_joy_orchestra;
     loadMusicXmlString(initial.xml, initial.title);
   }
 
@@ -644,6 +644,7 @@
         <div>
           <div class="mixer-part-name">${escapeHtml(p.name)}</div>
           <select class="select-sm mixer-timbre" data-part="${p.id}">
+            <option value="saxophone" ${cfg.timbre === 'saxophone' ? 'selected' : ''}>เสียงแซกโซโฟน (Saxophone)</option>
             <option value="woodwind" ${cfg.timbre === 'woodwind' ? 'selected' : ''}>เสียงเครื่องลมไม้ (Woodwind)</option>
             <option value="brass" ${cfg.timbre === 'brass' ? 'selected' : ''}>เสียงเครื่องทองเหลือง (Brass)</option>
             <option value="strings" ${cfg.timbre === 'strings' ? 'selected' : ''}>เสียงเครื่องสาย (Strings)</option>
@@ -774,7 +775,8 @@
     $('#btn-abc-print').addEventListener('click', () => window.print());
 
     // Initial template
-    editor.value = window.MAESTRO_SAMPLES.abc.wind_quartet;
+    const initAbcKey = $('#select-abc-template').value || 'tenor_sax_feature';
+    editor.value = window.MAESTRO_SAMPLES.abc[initAbcKey] || window.MAESTRO_SAMPLES.abc.wind_quartet;
     syncMetaFromAbc();
     renderAbcScore();
   }

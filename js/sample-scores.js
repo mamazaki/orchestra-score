@@ -496,11 +496,428 @@ Q:1/4=100
 K:C
 V:1 name="Melody" snm="Mel." clef=treble
 "C" E G A c | "Am" A G E2 | "F" F A c A | "G" G4 |
-"C" e d c A | "Em" G E G2 | "Dm" D E "G7" G A | "C" c4 |]`
+"C" e d c A | "Em" G E G2 | "Dm" D E "G7" G A | "C" c4 |]`,
+
+    tenor_sax_feature: `X:1
+T:Midnight Tenor Saxophone Ballad
+C:MaestroScroll Jazz Series
+M:4/4
+L:1/8
+Q:1/4=84
+K:Dm
+%%score 1 2 3
+V:1 name="Bb Tenor Sax (Lead)" snm="T.Sax" clef=treble
+!mf! AGFD A4 | GFED F4 | _BAGF G3F | E2 ^C2 A,4 |
+!f! AGFD A2 d2 | c_BAG B4 | AGFE D2 E2 | F3E E4 |]
+V:2 name="Brass & Keys Pad" snm="Pad" clef=treble
+!mp! F8 | D8 | D4 _E4 | ^C4 E4 |
+!mf! F4 F4 | G4 D4 | F4 G4 | A4 G4 |]
+V:3 name="Bass" snm="Bs." clef=bass
+!mp! D,6 A,,2 | _B,,6 F,,2 | G,,6 D,2 | A,,6 E,,2 |
+!mf! D,4 C,4 | _B,,4 G,,4 | F,,4 C,4 | F,,4 A,,4 |]`
   };
+
+  // 4) Midnight Velvet Sax Ballad — Lead Tenor Saxophone (16 Measures, D Minor)
+  const tenorMidnightBalladXml = buildMusicXML({
+    title: 'Midnight Velvet Sax Ballad (Tenor Sax Lead)',
+    composer: 'MaestroScroll Jazz & Pop Series',
+    fifths: -1,
+    beats: 4,
+    beatType: 4,
+    tempo: 84,
+    parts: [
+      {
+        id: 'P1',
+        name: 'Bb Tenor Sax (Lead)',
+        abbr: 'T.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['A4:2@mf', 'G4:2', 'F4:2', 'D4:2', 'A4:8'],
+          ['G4:2', 'F4:2', 'E4:2', 'D4:2', 'F4:8'],
+          ['Bb4:2', 'A4:2', 'G4:2', 'F4:2', 'G4:6', 'F4:2'],
+          ['E4:4', 'C#4:4', 'A3:8'],
+          ['A4:2@f', 'G4:2', 'F4:2', 'D4:2', 'A4:4', 'D5:4'],
+          ['C5:2', 'Bb4:2', 'A4:2', 'G4:2', 'Bb4:8'],
+          ['A4:2', 'G4:2', 'F4:2', 'E4:2', 'D4:4', 'E4:4'],
+          ['F4:6', 'E4:2', 'E4:8'],
+          ['D5:4@mf', 'C5:2', 'Bb4:2', 'A4:4', 'F4:4'],
+          ['G4:4', 'Bb4:4', 'D5:6', 'C5:2'],
+          ['Bb4:2', 'A4:2', 'G4:4', 'E4:4', 'C5:4'],
+          ['A4:8', 'G4:4', 'E4:4'],
+          ['A4:2@f', 'G4:2', 'F4:2', 'D4:2', 'A4:6', 'F4:2'],
+          ['G4:2', 'F4:2', 'E4:2', 'D4:2', 'Bb4:8'],
+          ['A4:4', 'F4:4', 'E4:4', 'C#4:4'],
+          ['D4:12@mp', 'R:4']
+        ]
+      },
+      {
+        id: 'P2',
+        name: 'Eb Alto Sax',
+        abbr: 'A.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['F4:16@mp'], ['D4:16'], ['D4:8', 'Eb4:8'], ['C#4:8', 'E4:8'],
+          ['F4:8@mf', 'F4:8'], ['G4:8', 'D4:8'], ['F4:8', 'G4:8'], ['A4:8', 'G4:8'],
+          ['F4:8@mp', 'F4:8'], ['D4:8', 'G4:8'], ['E4:8', 'G4:8'], ['F4:8', 'E4:8'],
+          ['F4:8@mf', 'D4:8'], ['D4:8', 'G4:8'], ['F4:8', 'E4:8'], ['F4:12@p', 'R:4']
+        ]
+      },
+      {
+        id: 'P3',
+        name: 'Bb Trumpet',
+        abbr: 'Tpt.',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['R:8', 'D5:8@p'], ['R:8', 'Bb4:8'], ['R:8', 'Bb4:8'], ['R:8', 'A4:4', 'G4:4'],
+          ['R:8', 'F5:4@mf', 'D5:4'], ['R:8', 'D5:8'], ['C5:4', 'Bb4:4', 'A4:4', 'G4:4'], ['A4:8', 'A4:8'],
+          ['F5:4@mp', 'R:4', 'D5:4', 'R:4'], ['Bb4:4', 'R:4', 'G4:8'], ['G4:4', 'R:4', 'C5:8'], ['C5:8', 'C#5:8'],
+          ['R:8', 'D5:4@mf', 'A4:4'], ['R:8', 'D5:8'], ['D5:8', 'C#5:8'], ['D5:12@p', 'R:4']
+        ]
+      },
+      {
+        id: 'P4',
+        name: 'Trombone',
+        abbr: 'Tbn.',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['A3:16@mp'], ['F3:16'], ['G3:16'], ['E3:8', 'G3:8'],
+          ['A3:16@mf'], ['G3:16'], ['A3:8', 'G3:8'], ['A3:8', 'G3:8'],
+          ['A3:16@mp'], ['G3:16'], ['G3:8', 'Bb3:8'], ['A3:8', 'A3:8'],
+          ['A3:16@mf'], ['G3:16'], ['A3:8', 'A3:8'], ['A3:12@p', 'R:4']
+        ]
+      },
+      {
+        id: 'P5',
+        name: 'Bass / Tuba',
+        abbr: 'Bass',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['D3:12@mp', 'A2:4'], ['Bb2:12', 'F2:4'], ['G2:12', 'D3:4'], ['A2:12', 'E2:4'],
+          ['D3:8@mf', 'C3:8'], ['Bb2:8', 'G2:8'], ['F2:8', 'C3:8'], ['F2:8', 'A2:8'],
+          ['D3:8@mp', 'D3:8'], ['G2:8', 'G2:8'], ['C3:8', 'C3:8'], ['F2:8', 'A2:8'],
+          ['D3:12@mf', 'C3:4'], ['Bb2:8', 'G2:8'], ['A2:8', 'A2:8'], ['D2:12@p', 'R:4']
+        ]
+      }
+    ]
+  });
+
+  // 5) The Velvet Detective Swing — Lead Tenor Saxophone (16 Measures, E Minor)
+  const tenorPinkNoirXml = buildMusicXML({
+    title: 'The Velvet Detective Swing (Tenor Sax Lead)',
+    composer: 'MaestroScroll Jazz Noir Series',
+    fifths: 1,
+    beats: 4,
+    beatType: 4,
+    tempo: 116,
+    parts: [
+      {
+        id: 'P1',
+        name: 'Bb Tenor Sax (Lead)',
+        abbr: 'T.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['D#4:2@mf', 'E4:6', 'F#4:2', 'G4:6'],
+          ['R:8', 'D#4:2', 'E4:2', 'F#4:2', 'G4:2'],
+          ['C5:2', 'B4:6', 'E4:2', 'G4:6'],
+          ['B4:2', 'Bb4:8', 'A4:2', 'G4:2', 'E4:2'],
+          ['D#4:2', 'E4:6', 'F#4:2', 'G4:6'],
+          ['R:8', 'D#4:2', 'E4:2', 'F#4:2', 'G4:2'],
+          ['C5:2', 'B4:6', 'G4:2', 'B4:6'],
+          ['E5:12', 'R:4'],
+          ['E5:2@f', 'D5:2', 'B4:2', 'A4:2', 'G4:4', 'E4:4'],
+          ['Bb4:2', 'A4:2', 'G4:2', 'E4:2', 'G4:4', 'E4:4'],
+          ['D#4:2', 'E4:2', 'G4:2', 'B4:2', 'D5:4', 'C5:4'],
+          ['B4:8', 'F#4:4', 'B4:4'],
+          ['D#4:2@mf', 'E4:6', 'F#4:2', 'G4:6'],
+          ['C5:2', 'B4:6', 'E4:2', 'G4:6'],
+          ['B4:2', 'Bb4:2', 'A4:2', 'G4:2', 'E4:4', 'G4:4'],
+          ['E4:8@f', 'R:4', 'E4:4']
+        ]
+      },
+      {
+        id: 'P2',
+        name: 'Eb Alto Sax',
+        abbr: 'A.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['R:16'], ['B4:4@mp', 'R:4', 'B4:4', 'R:4'], ['R:16'], ['G4:4', 'F#4:4', 'E4:8'],
+          ['R:16'], ['B4:4', 'R:4', 'B4:4', 'R:4'], ['R:16'], ['G4:4@mf', 'A4:4', 'B4:8'],
+          ['G4:8@mp', 'F#4:8'], ['E4:8', 'G4:8'], ['F#4:8', 'A4:8'], ['F#4:8', 'D#4:8'],
+          ['R:16'], ['G4:8@mf', 'E4:8'], ['G4:4', 'F#4:4', 'E4:8'], ['B4:8@f', 'R:4', 'B4:4']
+        ]
+      },
+      {
+        id: 'P3',
+        name: 'Bb Trumpet',
+        abbr: 'Tpt.',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['R:16'], ['E4:4@mp', 'R:12'], ['R:16'], ['R:8', 'B4:4@mf', 'R:4'],
+          ['R:16'], ['E4:4', 'R:12'], ['R:16'], ['R:4', 'G4:4@f', 'B4:4', 'E5:4'],
+          ['B4:4@mf', 'R:4', 'B4:4', 'R:4'], ['G4:4', 'R:4', 'E4:8'], ['B4:8', 'A4:8'], ['B4:8', 'B4:8'],
+          ['R:16'], ['R:8', 'G4:4@mf', 'B4:4'], ['R:8', 'B4:4', 'G4:4'], ['E5:8@f', 'R:4', 'E5:4']
+        ]
+      },
+      {
+        id: 'P4',
+        name: 'Trombone',
+        abbr: 'Tbn.',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['E3:4@mp', 'R:4', 'G3:4', 'R:4'], ['E3:4', 'R:4', 'B3:4', 'R:4'],
+          ['E3:4', 'R:4', 'G3:4', 'R:4'], ['G3:4', 'F#3:4', 'E3:8'],
+          ['E3:4', 'R:4', 'G3:4', 'R:4'], ['E3:4', 'R:4', 'B3:4', 'R:4'],
+          ['E3:4', 'R:4', 'G3:4', 'R:4'], ['B3:8@mf', 'G3:8'],
+          ['B3:8@mp', 'A3:8'], ['G3:8', 'E3:8'], ['F#3:8', 'A3:8'], ['B3:8', 'A3:8'],
+          ['E3:4@mp', 'R:4', 'G3:4', 'R:4'], ['E3:4', 'R:4', 'G3:4', 'R:4'],
+          ['G3:4', 'F#3:4', 'E3:8'], ['G3:8@f', 'R:4', 'G3:4']
+        ]
+      },
+      {
+        id: 'P5',
+        name: 'Bass / Tuba',
+        abbr: 'Bass',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['E2:4@mf', 'G2:4', 'B2:4', 'G2:4'], ['E2:4', 'G2:4', 'B2:4', 'D3:4'],
+          ['E2:4', 'G2:4', 'B2:4', 'G2:4'], ['B2:4', 'A2:4', 'G2:4', 'E2:4'],
+          ['E2:4', 'G2:4', 'B2:4', 'G2:4'], ['E2:4', 'G2:4', 'B2:4', 'D3:4'],
+          ['E2:4', 'G2:4', 'B2:4', 'G2:4'], ['E2:4', 'B2:4', 'E3:8'],
+          ['E2:4', 'G2:4', 'B2:4', 'C3:4'], ['A2:4', 'G2:4', 'E2:4', 'G2:4'],
+          ['B2:4', 'A2:4', 'F#2:4', 'D2:4'], ['B2:4', 'F#2:4', 'B2:4', 'D3:4'],
+          ['E2:4', 'G2:4', 'B2:4', 'G2:4'], ['E2:4', 'G2:4', 'B2:4', 'G2:4'],
+          ['B2:4', 'Bb2:4', 'A2:4', 'G2:4'], ['E2:8@f', 'R:4', 'E2:4']
+        ]
+      }
+    ]
+  });
+
+  // 6) Street Soul & Funk Sax Groove — Lead Tenor Saxophone (16 Measures, D Minor / F)
+  const tenorSoulFunkXml = buildMusicXML({
+    title: 'Street Soul & Funk Sax Groove (Tenor Sax Lead)',
+    composer: 'MaestroScroll Funk Horn Section',
+    fifths: -1,
+    beats: 4,
+    beatType: 4,
+    tempo: 108,
+    parts: [
+      {
+        id: 'P1',
+        name: 'Bb Tenor Sax (Lead)',
+        abbr: 'T.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['D4:2@f', 'F4:2', 'G4:2', 'A4:4', 'G4:2', 'F4:4'],
+          ['D4:2', 'F4:2', 'G4:2', 'C5:4', 'A4:2', 'G4:4'],
+          ['D4:2', 'F4:2', 'G4:2', 'A4:4', 'G4:2', 'F4:4'],
+          ['G4:2', 'F4:2', 'D4:4', 'C4:4', 'D4:4'],
+          ['D5:2@f', 'C5:2', 'A4:2', 'G4:4', 'F4:2', 'D4:4'],
+          ['F4:2', 'G4:2', 'A4:2', 'C5:4', 'D5:6'],
+          ['D5:2', 'C5:2', 'A4:2', 'G4:4', 'F4:2', 'G4:4'],
+          ['A4:8', 'G4:4', 'F4:4'],
+          ['D5:4@ff', 'F5:2', 'D5:2', 'C5:2', 'A4:2', 'G4:4'],
+          ['Bb4:2', 'A4:2', 'G4:2', 'F4:2', 'G4:4', 'A4:4'],
+          ['D5:2', 'C5:2', 'A4:2', 'G4:2', 'F4:2', 'G4:2', 'A4:4'],
+          ['C5:4', 'A4:4', 'G4:4', 'E4:4'],
+          ['D4:2@f', 'F4:2', 'G4:2', 'A4:4', 'G4:2', 'F4:4'],
+          ['D4:2', 'F4:2', 'G4:2', 'C5:4', 'A4:2', 'G4:4'],
+          ['F4:2', 'G4:2', 'A4:2', 'C5:2', 'D5:4', 'C5:4'],
+          ['D5:4@ff', 'R:4', 'D5:4', 'R:4']
+        ]
+      },
+      {
+        id: 'P2',
+        name: 'Eb Alto Sax',
+        abbr: 'A.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['R:8', 'F4:2@mf', 'R:2', 'D4:4'], ['R:8', 'G4:2', 'R:2', 'E4:4'],
+          ['R:8', 'F4:2', 'R:2', 'D4:4'], ['E4:2', 'D4:2', 'R:12'],
+          ['A4:4@mf', 'R:4', 'F4:4', 'R:4'], ['D4:4', 'R:4', 'G4:8'],
+          ['A4:4', 'R:4', 'F4:4', 'R:4'], ['E4:8', 'C#4:8'],
+          ['F4:4@f', 'R:4', 'E4:4', 'R:4'], ['G4:4', 'R:4', 'F4:8'],
+          ['A4:4', 'R:4', 'G4:4', 'R:4'], ['G4:8', 'E4:8'],
+          ['R:8', 'F4:2@f', 'R:2', 'D4:4'], ['R:8', 'G4:2', 'R:2', 'E4:4'],
+          ['D4:4', 'F4:4', 'A4:4', 'G4:4'], ['F4:4@ff', 'R:4', 'F4:4', 'R:4']
+        ]
+      },
+      {
+        id: 'P3',
+        name: 'Bb Trumpet',
+        abbr: 'Tpt.',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['R:12', 'A4:2@mf', 'R:2'], ['R:12', 'C5:2', 'R:2'],
+          ['R:12', 'A4:2', 'R:2'], ['Bb4:2', 'A4:2', 'R:12'],
+          ['R:8', 'D5:4@mf', 'R:4'], ['R:8', 'E5:4', 'R:4'],
+          ['R:8', 'D5:4', 'R:4'], ['C#5:8', 'A4:8'],
+          ['A4:4@f', 'R:4', 'G4:4', 'R:4'], ['D5:4', 'R:4', 'C5:8'],
+          ['F5:4', 'R:4', 'E5:4', 'R:4'], ['E5:8', 'C5:8'],
+          ['R:12', 'A4:2@f', 'R:2'], ['R:12', 'C5:2', 'R:2'],
+          ['A4:4', 'C5:4', 'F5:4', 'E5:4'], ['A5:4@ff', 'R:4', 'A5:4', 'R:4']
+        ]
+      },
+      {
+        id: 'P4',
+        name: 'Trombone',
+        abbr: 'Tbn.',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['D3:4@mf', 'R:4', 'A3:2', 'R:2', 'F3:4'], ['D3:4', 'R:4', 'G3:2', 'R:2', 'E3:4'],
+          ['D3:4', 'R:4', 'A3:2', 'R:2', 'F3:4'], ['G3:4', 'F3:4', 'E3:8'],
+          ['F3:8@mf', 'D3:8'], ['Bb3:8', 'G3:8'],
+          ['F3:8', 'G3:8'], ['A3:8', 'A3:8'],
+          ['A3:4@f', 'R:4', 'G3:4', 'R:4'], ['Bb3:4', 'R:4', 'A3:8'],
+          ['A3:4', 'R:4', 'G3:4', 'R:4'], ['G3:8', 'E3:8'],
+          ['D3:4@f', 'R:4', 'A3:2', 'R:2', 'F3:4'], ['D3:4', 'R:4', 'G3:2', 'R:2', 'E3:4'],
+          ['F3:4', 'G3:4', 'A3:4', 'G3:4'], ['A3:4@ff', 'R:4', 'A3:4', 'R:4']
+        ]
+      },
+      {
+        id: 'P5',
+        name: 'Bass / Tuba',
+        abbr: 'Bass',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['D2:4@f', 'D3:2', 'C3:2', 'D3:4', 'A2:4'], ['D2:4', 'D3:2', 'C3:2', 'G2:4', 'A2:4'],
+          ['D2:4', 'D3:2', 'C3:2', 'D3:4', 'A2:4'], ['G2:4', 'F2:4', 'E2:4', 'A2:4'],
+          ['D2:4', 'F2:4', 'A2:4', 'D3:4'], ['Bb2:4', 'G2:4', 'C3:4', 'A2:4'],
+          ['D2:4', 'F2:4', 'G2:4', 'Bb2:4'], ['A2:4', 'E2:4', 'A2:8'],
+          ['D2:4', 'D3:4', 'C2:4', 'C3:4'], ['G2:4', 'Bb2:4', 'F2:4', 'A2:4'],
+          ['D2:4', 'F2:4', 'G2:4', 'Bb2:4'], ['C3:4', 'G2:4', 'A2:4', 'E2:4'],
+          ['D2:4', 'D3:2', 'C3:2', 'D3:4', 'A2:4'], ['D2:4', 'D3:2', 'C3:2', 'G2:4', 'A2:4'],
+          ['F2:4', 'G2:4', 'A2:4', 'C3:4'], ['D2:4@ff', 'R:4', 'D2:4', 'R:4']
+        ]
+      }
+    ]
+  });
+
+  // 7) Blue Sunset Bossa Nova — Lead Tenor Saxophone (16 Measures, Eb Major)
+  const tenorBossaXml = buildMusicXML({
+    title: 'Blue Sunset Bossa Nova (Tenor Sax Lead)',
+    composer: 'MaestroScroll Bossa Jazz Series',
+    fifths: -3,
+    beats: 4,
+    beatType: 4,
+    tempo: 120,
+    parts: [
+      {
+        id: 'P1',
+        name: 'Bb Tenor Sax (Lead)',
+        abbr: 'T.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['G4:6@mf', 'F4:2', 'Eb4:4', 'G4:4'],
+          ['Bb4:6', 'Ab4:2', 'G4:8'],
+          ['C5:4', 'Bb4:4', 'Ab4:4', 'G4:4'],
+          ['F4:8', 'D4:8'],
+          ['F4:6', 'Eb4:2', 'D4:4', 'F4:4'],
+          ['Ab4:6', 'G4:2', 'F4:8'],
+          ['G4:4', 'F4:4', 'Eb4:4', 'D4:4'],
+          ['Eb4:12', 'R:4'],
+          ['Bb4:6@f', 'C5:2', 'D5:4', 'Bb4:4'],
+          ['Eb5:6', 'D5:2', 'C5:8'],
+          ['Ab4:6', 'Bb4:2', 'C5:4', 'Ab4:4'],
+          ['G4:8', 'Bb4:8'],
+          ['G4:6@mf', 'F4:2', 'Eb4:4', 'G4:4'],
+          ['Bb4:6', 'Ab4:2', 'G4:4', 'C5:4'],
+          ['Bb4:4', 'Ab4:4', 'G4:4', 'F4:4'],
+          ['Eb4:12@mp', 'R:4']
+        ]
+      },
+      {
+        id: 'P2',
+        name: 'Eb Alto Sax',
+        abbr: 'A.Sax',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['Eb4:8@mp', 'G4:8'], ['G4:8', 'Eb4:8'], ['Ab4:8', 'Eb4:8'], ['D4:8', 'Bb4:8'],
+          ['D4:8', 'F4:8'], ['F4:8', 'D4:8'], ['Eb4:8', 'D4:8'], ['G4:12', 'R:4'],
+          ['G4:8@mf', 'F4:8'], ['G4:8', 'Ab4:8'], ['F4:8', 'Eb4:8'], ['Eb4:8', 'G4:8'],
+          ['Eb4:8@mp', 'G4:8'], ['G4:8', 'Eb4:8'], ['F4:8', 'D4:8'], ['G4:12@p', 'R:4']
+        ]
+      },
+      {
+        id: 'P3',
+        name: 'Bb Trumpet',
+        abbr: 'Tpt.',
+        clefSign: 'G',
+        clefLine: 2,
+        measures: [
+          ['R:8', 'Bb4:8@p'], ['R:8', 'Eb5:8'], ['R:8', 'Eb5:8'], ['R:8', 'Bb4:8'],
+          ['R:8', 'Ab4:8'], ['R:8', 'D5:8'], ['Bb4:8', 'Ab4:8'], ['G4:12', 'R:4'],
+          ['R:8', 'F5:8@mp'], ['R:8', 'Eb5:8'], ['R:8', 'Eb5:8'], ['Eb5:8', 'D5:8'],
+          ['R:8', 'Bb4:8@p'], ['R:8', 'Eb5:8'], ['D5:8', 'Bb4:8'], ['Bb4:12@p', 'R:4']
+        ]
+      },
+      {
+        id: 'P4',
+        name: 'Trombone',
+        abbr: 'Tbn.',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['Bb3:8@mp', 'G3:8'], ['Bb3:8', 'G3:8'], ['C4:8', 'Ab3:8'], ['Bb3:8', 'F3:8'],
+          ['Bb3:8', 'Ab3:8'], ['Bb3:8', 'Ab3:8'], ['G3:8', 'Ab3:8'], ['G3:12', 'R:4'],
+          ['D4:8@mf', 'Bb3:8'], ['Bb3:8', 'C4:8'], ['C4:8', 'Ab3:8'], ['Bb3:8', 'G3:8'],
+          ['Bb3:8@mp', 'G3:8'], ['Bb3:8', 'G3:8'], ['Ab3:8', 'Bb3:8'], ['G3:12@p', 'R:4']
+        ]
+      },
+      {
+        id: 'P5',
+        name: 'Bass / Tuba',
+        abbr: 'Bass',
+        clefSign: 'F',
+        clefLine: 4,
+        measures: [
+          ['Eb3:6@mf', 'Bb2:2', 'Bb2:6', 'Eb3:2'], ['Eb3:6', 'Bb2:2', 'Bb2:6', 'Eb3:2'],
+          ['Ab2:6', 'Eb3:2', 'Eb3:6', 'Ab2:2'], ['Bb2:6', 'F2:2', 'F2:6', 'Bb2:2'],
+          ['F2:6', 'C3:2', 'C3:6', 'F2:2'], ['Bb2:6', 'F2:2', 'F2:6', 'Bb2:2'],
+          ['Eb3:6', 'Bb2:2', 'Bb2:6', 'F2:2'], ['Eb2:12', 'R:4'],
+          ['G2:6', 'D3:2', 'D3:6', 'G2:2'], ['C3:6', 'G2:2', 'G2:6', 'C3:2'],
+          ['F2:6', 'C3:2', 'C3:6', 'F2:2'], ['Eb3:6', 'Bb2:2', 'Bb2:6', 'F2:2'],
+          ['Eb3:6', 'Bb2:2', 'Bb2:6', 'Eb3:2'], ['Eb3:6', 'Bb2:2', 'C3:6', 'G2:2'],
+          ['F2:6', 'C3:2', 'Bb2:6', 'F2:2'], ['Eb2:12@p', 'R:4']
+        ]
+      }
+    ]
+  });
 
   return {
     musicxml: {
+      tenor_midnight_ballad: {
+        title: 'Midnight Velvet Sax Ballad (Tenor Sax Lead)',
+        xml: tenorMidnightBalladXml
+      },
+      tenor_pink_noir_swing: {
+        title: 'The Velvet Detective Swing (Tenor Sax Lead)',
+        xml: tenorPinkNoirXml
+      },
+      tenor_soul_funk_groove: {
+        title: 'Street Soul & Funk Sax Groove (Tenor Sax Lead)',
+        xml: tenorSoulFunkXml
+      },
+      tenor_bossa_serenade: {
+        title: 'Blue Sunset Bossa Nova (Tenor Sax Lead)',
+        xml: tenorBossaXml
+      },
       ode_to_joy_orchestra: {
         title: 'Symphony No. 9 "Ode to Joy" (วง 5 พาร์ท)',
         xml: odeToJoyXml

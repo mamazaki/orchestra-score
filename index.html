@@ -171,9 +171,17 @@
         <div class="toolbar-group">
           <label class="field-label" for="select-sample-score"><i class="fa-solid fa-book-open"></i> เพลงตัวอย่าง:</label>
           <select id="select-sample-score" class="select-ctrl">
-            <option value="ode_to_joy_orchestra">Symphony No.9 "Ode to Joy" (วง 5 พาร์ท)</option>
-            <option value="royal_band_chorale">Warm-up Chorale (แบบฝึกวงดุริยางค์ 4 พาร์ท)</option>
-            <option value="victory_fanfare_march">Victory Fanfare March (มาร์ช 4 พาร์ท)</option>
+            <optgroup label="🎷 เพลง Tenor Saxophone เป็นตัวหลัก (4 เพลง)">
+              <option value="tenor_midnight_ballad" selected>Midnight Velvet Sax Ballad (เทเนอร์แซกบัลลาด)</option>
+              <option value="tenor_pink_noir_swing">The Velvet Detective Swing (แจ๊สสวิงลึกลับ)</option>
+              <option value="tenor_soul_funk_groove">Street Soul &amp; Funk Sax Groove (โซลฟังก์)</option>
+              <option value="tenor_bossa_serenade">Blue Sunset Bossa Nova (บอสซาโนวา)</option>
+            </optgroup>
+            <optgroup label="🎼 เพลงวงดุริยางค์ &amp; ออร์เคสตรา (3 เพลง)">
+              <option value="ode_to_joy_orchestra">Symphony No.9 "Ode to Joy" (วง 5 พาร์ท)</option>
+              <option value="royal_band_chorale">Warm-up Chorale (แบบฝึกวงดุริยางค์ 4 พาร์ท)</option>
+              <option value="victory_fanfare_march">Victory Fanfare March (มาร์ช 4 พาร์ท)</option>
+            </optgroup>
           </select>
 
           <input type="file" id="input-musicxml-file" accept=".xml,.musicxml,.mxl" hidden />
@@ -289,6 +297,7 @@
         <div class="toolbar-group">
           <label class="field-label" for="select-abc-template"><i class="fa-solid fa-wand-magic-sparkles"></i> เทมเพลต:</label>
           <select id="select-abc-template" class="select-ctrl">
+            <option value="tenor_sax_feature">โซโล่ Tenor Saxophone + แบ็กอัป (Tenor Sax Lead)</option>
             <option value="wind_quartet">วงเครื่องลม 4 พาร์ท (Flute, Clarinet, Trumpet, Bass)</option>
             <option value="string_quartet">วงเครื่องสาย (String Quartet 4 พาร์ท)</option>
             <option value="marching_cadence">มาร์ชชิ่งแบนด์ (Marching Lead &amp; Bass)</option>
