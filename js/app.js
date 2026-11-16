@@ -71,11 +71,96 @@
   }
 
   // =========================================================================
+  // Cache Management & Force Reload
+  // =========================================================================
+  async function clearAppCacheAndReload(promptConfirm = false) {
+    if (promptConfirm && !confirm('ต้องการล้างแคชเครื่องและโหลดเวอร์ชันล่าสุด v1.3.2 ใช่หรือไม่?')) {
+      return;
+    }
+    showToast('กำลังล้างแคชเครื่องและดึงเวอร์ชันล่าสุด v1.3.2...', 'info');
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          try {
+            if (reg.active) reg.active.postMessage({ type: 'CLEAR_ALL_CACHES' });
+            await reg.unregister();
+          } catch (_) {}
+        }
+      }
+
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+
+      try {
+        sessionStorage.clear();
+      } catch (_) {}
+    } catch (err) {
+      console.warn('Cache purge error:', err);
+    }
+
+    const cleanUrl = new URL(window.location.href);
+    cleanUrl.searchParams.set('_v', Date.now().toString());
+    window.location.replace(cleanUrl.href);
+  }
+
+  function showUpdateBanner(worker) {
+    const container = $('#toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast info toast-update-banner';
+    toast.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;">
+        <span><i class="fa-solid fa-sparkles text-accent"></i> มีอัปเดตเวอร์ชันใหม่ (v1.3.2)</span>
+        <button id="btn-toast-update-now" class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:0.75rem;">
+          <i class="fa-solid fa-arrows-rotate"></i> อัปเดตทันที
+        </button>
+      </div>
+    `;
+    container.appendChild(toast);
+
+    const updateBtn = toast.querySelector('#btn-toast-update-now');
+    if (updateBtn) {
+      updateBtn.addEventListener('click', () => {
+        if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
+        clearAppCacheAndReload(false);
+      });
+    }
+  }
+
+  // =========================================================================
   // Initialization & Service Worker
   // =========================================================================
   document.addEventListener('DOMContentLoaded', () => {
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
+      navigator.serviceWorker
+        .register('./sw.js?v=1.3.2', { updateViaCache: 'none' })
+        .then((reg) => {
+          // Check for newer SW on server immediately
+          reg.update().catch(() => {});
+
+          reg.addEventListener('updatefound', () => {
+            const installing = reg.installing;
+            if (!installing) return;
+            installing.addEventListener('statechange', () => {
+              if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                showUpdateBanner(installing);
+              }
+            });
+          });
+        })
+        .catch(() => {});
+
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
     }
 
     if (window.pdfjsLib) {
@@ -100,6 +185,20 @@
   // Navigation, Themes, Fullscreen & Modals
   // =========================================================================
   function initNavigationAndModals() {
+    // Cache clearing & version refresh buttons
+    const attachCacheRefresh = (el) => {
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearAppCacheAndReload(false);
+      });
+    };
+
+    attachCacheRefresh($('#btn-refresh-cache'));
+    attachCacheRefresh($('#brand-version-badge'));
+    attachCacheRefresh($('#btn-modal-clear-cache'));
+    $$('.btn-drawer-refresh').forEach(attachCacheRefresh);
+
     $$('.nav-tab').forEach((btn) => {
       btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });

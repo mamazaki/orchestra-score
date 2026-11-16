@@ -1,13 +1,13 @@
-const CACHE_NAME = 'maestroscroll-v1.3.1';
+const CACHE_NAME = 'maestroscroll-v1.3.2';
 const CORE_ASSETS = [
   './',
   './index.html',
-  './css/styles.css?v=1.3.1',
-  './js/sample-scores.js?v=1.3.1',
-  './js/audio-engine.js?v=1.3.1',
-  './js/xml-processor.js?v=1.3.1',
-  './js/app.js?v=1.3.1',
-  './manifest.json'
+  './css/styles.css?v=1.3.2',
+  './js/sample-scores.js?v=1.3.2',
+  './js/audio-engine.js?v=1.3.2',
+  './js/xml-processor.js?v=1.3.2',
+  './js/app.js?v=1.3.2',
+  './manifest.json?v=1.3.2'
 ];
 
 self.addEventListener('install', (event) => {
@@ -21,16 +21,45 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+self.addEventListener('message', (event) => {
+  if (!event.data) return;
+  if (event.data.type === 'SKIP_WAITING' || event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  } else if (event.data.type === 'CLEAR_ALL_CACHES') {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+    );
+  }
 });
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
-  // Network-first strategy for all requests so mobile & desktop always get latest UI/scores,
-  // falling back to offline cache when disconnected.
+  const isHtml = event.request.mode === 'navigate' ||
+                 (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'));
+
+  // For HTML page navigation: strictly network-first with cache: 'no-cache'
+  // so mobile browsers never get stuck on an old HTML bundle.
+  if (isHtml) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-cache' })
+        .then((res) => {
+          if (res && res.status === 200) {
+            const clone = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return res;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./index.html') || caches.match('./')))
+    );
+    return;
+  }
+
+  // For JS / CSS / Assets: Network-first falling back to cache
   event.respondWith(
     fetch(event.request)
       .then((res) => {

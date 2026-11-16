@@ -7,7 +7,11 @@
   <meta name="description" content="MaestroScroll — เว็บแอปเขียนและเปิดอ่านโน้ตเพลงวงดุริยางค์และวงดนตรี พร้อมแยกพาร์ท เลื่อนโน้ตอัตโนมัติ เมโทรนอม และตั้งสาย รันบน GitHub Pages" />
   <title>MaestroScroll — สตูดิโอโน้ตเพลงวงดุริยางค์ &amp; Auto-Scroll</title>
 
-  <link rel="manifest" href="./manifest.json" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <link rel="manifest" href="./manifest.json?v=1.3.2" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236366f1'/%3E%3Ctext x='32' y='45' font-size='36' text-anchor='middle' fill='white'%3E%F0%9F%8E%BC%3C/text%3E%3C/svg%3E" />
 
   <!-- Fonts & Icons -->
@@ -22,7 +26,7 @@
   <script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.1/dist/abcjs-basic-min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <link rel="stylesheet" href="./css/styles.css?v=1.3.1" />
+  <link rel="stylesheet" href="./css/styles.css?v=1.3.2" />
 </head>
 <body>
   <!-- Top App Header -->
@@ -30,7 +34,11 @@
     <div class="brand">
       <div class="brand-logo"><i class="fa-solid fa-music"></i></div>
       <div class="brand-text">
-        <h1>MaestroScroll</h1>
+        <div class="brand-title-wrap">
+          <h1>MaestroScroll</h1>
+          <a href="https://github.com/mamazaki" target="_blank" rel="noopener noreferrer" class="brand-author" title="ผู้พัฒนา @mamazaki">@mamazaki</a>
+          <span class="brand-version" id="brand-version-badge" title="เวอร์ชัน v1.3.2 (แตะเพื่อล้างแคช/อัปเดต)">v1.3.2</span>
+        </div>
         <span class="brand-sub">Orchestra &amp; Band Studio</span>
       </div>
     </div>
@@ -55,6 +63,10 @@
     </nav>
 
     <div class="header-actions">
+      <button id="btn-refresh-cache" class="icon-btn" title="ล้างแคชเครื่อง &amp; อัปเดตเวอร์ชันล่าสุด (v1.3.2)">
+        <i class="fa-solid fa-arrows-rotate"></i>
+        <span class="hide-sm">ล้างแคช</span>
+      </button>
       <button id="btn-toggle-metronome" class="icon-btn accent-outline" title="เมโทรนอม &amp; ตั้งสาย (M)">
         <i class="fa-solid fa-stopwatch"></i>
         <span class="hide-sm">เมโทรนอม &amp; ตั้งสาย</span>
@@ -190,8 +202,11 @@
     <section id="view-orchestra" class="tab-view active">
       <div id="orch-drawer" class="controls-drawer no-print">
         <div class="drawer-mobile-close-bar">
-          <span><i class="fa-solid fa-sliders"></i> ตั้งค่าเพลง พาร์ท &amp; Transpose</span>
-          <button type="button" class="btn-sm btn-danger btn-close-mobile-drawer"><i class="fa-solid fa-xmark"></i> ปิด</button>
+          <span><i class="fa-solid fa-sliders"></i> ตั้งค่าเพลง &amp; พาร์ท</span>
+          <div class="drawer-close-actions">
+            <button type="button" class="btn-sm btn-secondary btn-drawer-refresh" title="ล้างแคชเครื่อง (v1.3.2)"><i class="fa-solid fa-arrows-rotate"></i> ล้างแคช</button>
+            <button type="button" class="btn-sm btn-danger btn-close-mobile-drawer"><i class="fa-solid fa-xmark"></i> ปิด</button>
+          </div>
         </div>
 
         <!-- Top Control Toolbar -->
@@ -603,6 +618,19 @@
         <button class="modal-close" data-close="modal-shortcuts"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div class="modal-body">
+        <div class="modal-app-card">
+          <div class="modal-app-header">
+            <div>
+              <div class="modal-app-title">MaestroScroll <a href="https://github.com/mamazaki" target="_blank" rel="noopener noreferrer" class="brand-author">@mamazaki</a> <span class="brand-version">v1.3.2</span></div>
+              <div class="modal-app-subtitle">Orchestra &amp; Band Sheet Music Studio</div>
+            </div>
+            <button id="btn-modal-clear-cache" class="btn btn-warning btn-sm" title="ล้าง Service Worker และ Browser Cache ทั้งหมด">
+              <i class="fa-solid fa-arrows-rotate"></i> ล้างแคช &amp; อัปเดตทันที
+            </button>
+          </div>
+          <p class="modal-app-hint"><i class="fa-solid fa-circle-info text-accent"></i> <strong>สำหรับสมาร์ตโฟน/แท็บเล็ต:</strong> หากเปิดหน้าเว็บแล้วยังเห็นเป็นเวอร์ชันเดิม สามารถกดปุ่ม <em>"ล้างแคช &amp; อัปเดตทันที"</em> เพื่อให้เครื่องดึงโค้ดล่าสุดจากเซิร์ฟเวอร์โดยตรงค่ะ</p>
+        </div>
+
         <table class="shortcuts-table">
           <thead>
             <tr><th>ปุ่ม / อุปกรณ์</th><th>การทำงาน</th></tr>
@@ -618,7 +646,7 @@
         </table>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-primary" data-close="modal-shortcuts">เข้าใจแล้ว</button>
+        <button class="btn btn-secondary" data-close="modal-shortcuts">ปิดหน้าต่าง</button>
       </div>
     </div>
   </div>
@@ -640,9 +668,9 @@
   <div id="toast-container" class="toast-container no-print"></div>
 
   <!-- Scripts -->
-  <script src="./js/sample-scores.js?v=1.3.1"></script>
-  <script src="./js/audio-engine.js?v=1.3.1"></script>
-  <script src="./js/xml-processor.js?v=1.3.1"></script>
-  <script src="./js/app.js?v=1.3.1"></script>
+  <script src="./js/sample-scores.js?v=1.3.2"></script>
+  <script src="./js/audio-engine.js?v=1.3.2"></script>
+  <script src="./js/xml-processor.js?v=1.3.2"></script>
+  <script src="./js/app.js?v=1.3.2"></script>
 </body>
 </html>
