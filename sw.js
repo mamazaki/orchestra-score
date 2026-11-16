@@ -1,12 +1,12 @@
-const CACHE_NAME = 'maestroscroll-v1.3.0';
+const CACHE_NAME = 'maestroscroll-v1.3.1';
 const CORE_ASSETS = [
   './',
   './index.html',
-  './css/styles.css?v=1.3.0',
-  './js/sample-scores.js?v=1.3.0',
-  './js/audio-engine.js?v=1.3.0',
-  './js/xml-processor.js?v=1.3.0',
-  './js/app.js?v=1.3.0',
+  './css/styles.css?v=1.3.1',
+  './js/sample-scores.js?v=1.3.1',
+  './js/audio-engine.js?v=1.3.1',
+  './js/xml-processor.js?v=1.3.1',
+  './js/app.js?v=1.3.1',
   './manifest.json'
 ];
 

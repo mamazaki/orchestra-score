@@ -63,9 +63,18 @@ class MusicXMLProcessor {
     return await file.text();
   }
 
+  static sanitizeXml(xmlString) {
+    if (typeof xmlString !== 'string') return '';
+    return xmlString
+      .replace(/^\uFEFF/, '')
+      .trim()
+      .replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);)/g, '&amp;');
+  }
+
   static parseMetadata(xmlString) {
+    const cleanXml = MusicXMLProcessor.sanitizeXml(xmlString);
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xmlString, 'application/xml');
+    const doc = parser.parseFromString(cleanXml, 'application/xml');
     const parseErr = doc.querySelector('parsererror');
     if (parseErr) {
       throw new Error('รูปแบบ XML ไม่ถูกต้อง');
@@ -98,14 +107,15 @@ class MusicXMLProcessor {
   }
 
   static filterParts(xmlString, selectedPartIds) {
-    if (!selectedPartIds || selectedPartIds.length === 0) return xmlString;
+    const cleanXml = MusicXMLProcessor.sanitizeXml(xmlString);
+    if (!selectedPartIds || selectedPartIds.length === 0) return cleanXml;
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xmlString, 'application/xml');
+    const doc = parser.parseFromString(cleanXml, 'application/xml');
     const selectedSet = new Set(selectedPartIds);
 
     const allScoreParts = Array.from(doc.querySelectorAll('part-list > score-part'));
     if (allScoreParts.length > 0 && selectedSet.size >= allScoreParts.length) {
-      return xmlString;
+      return cleanXml;
     }
 
     allScoreParts.forEach((sp) => {
@@ -129,11 +139,12 @@ class MusicXMLProcessor {
   }
 
   static transpose(xmlString, semitones) {
+    const cleanXml = MusicXMLProcessor.sanitizeXml(xmlString);
     const semi = parseInt(semitones, 10) || 0;
-    if (semi === 0) return xmlString;
+    if (semi === 0) return cleanXml;
 
     const parser = new DOMParser();
-    const doc = parser.parseFromString(xmlString, 'application/xml');
+    const doc = parser.parseFromString(cleanXml, 'application/xml');
 
     let latestFifths = 0;
 
@@ -201,7 +212,8 @@ class MusicXMLProcessor {
   }
 
   static extractSequence(xmlString) {
-    const meta = MusicXMLProcessor.parseMetadata(xmlString);
+    const cleanXml = MusicXMLProcessor.sanitizeXml(xmlString);
+    const meta = MusicXMLProcessor.parseMetadata(cleanXml);
     const { doc, tempo, parts } = meta;
 
     const partMap = new Map(parts.map((p) => [p.id, p]));

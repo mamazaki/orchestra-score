@@ -40,6 +40,15 @@ window.MAESTRO_SAMPLES = (() => {
     return { rest: false, step, alter, octave, dur, durInfo, dyn };
   }
 
+  function escapeXml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&apos;');
+  }
+
   function buildMusicXML({ title, composer, fifths = 0, beats = 4, beatType = 4, tempo = 110, parts }) {
     const divisions = 4; // quarter = 4
     let partListXml = '';
@@ -47,9 +56,9 @@ window.MAESTRO_SAMPLES = (() => {
 
     parts.forEach((p, pIdx) => {
       partListXml += `
-    <score-part id="${p.id}">
-      <part-name>${p.name}</part-name>
-      <part-abbreviation>${p.abbr}</part-abbreviation>
+    <score-part id="${escapeXml(p.id)}">
+      <part-name>${escapeXml(p.name)}</part-name>
+      <part-abbreviation>${escapeXml(p.abbr)}</part-abbreviation>
     </score-part>`;
 
       let measuresXml = '';
@@ -116,16 +125,16 @@ window.MAESTRO_SAMPLES = (() => {
       });
 
       partsXml += `
-  <part id="${p.id}">${measuresXml}
+  <part id="${escapeXml(p.id)}">${measuresXml}
   </part>`;
     });
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 3.1 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
 <score-partwise version="3.1">
-  <work><work-title>${title}</work-title></work>
+  <work><work-title>${escapeXml(title)}</work-title></work>
   <identification>
-    <creator type="composer">${composer}</creator>
+    <creator type="composer">${escapeXml(composer)}</creator>
   </identification>
   <part-list>${partListXml}
   </part-list>${partsXml}
