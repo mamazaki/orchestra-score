@@ -59,6 +59,9 @@
         <i class="fa-solid fa-stopwatch"></i>
         <span class="hide-sm">เมโทรนอม &amp; ตั้งสาย</span>
       </button>
+      <button id="btn-focus-reader" class="icon-btn" title="โหมดอ่านโน้ตเต็มจอ (ซ่อนแถบเครื่องมือ)">
+        <i class="fa-solid fa-book-open-reader"></i>
+      </button>
       <button id="btn-toggle-night-score" class="icon-btn" title="สลับสีกระดาษโน้ต (ขาว / โหมดกลางคืน)">
         <i class="fa-solid fa-circle-half-stroke"></i>
       </button>
@@ -155,8 +158,16 @@
   <main class="app-main">
     <!-- TAB 1: ORCHESTRA & BAND SCORE VIEWER (MusicXML) -->
     <section id="view-orchestra" class="tab-view active">
+      <!-- Mobile Compact Toggle Bar -->
+      <div class="mobile-tools-strip no-print">
+        <button id="btn-toggle-orch-tools" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-sliders"></i> เครื่องมือ / เปลี่ยนเพลง / Transpose
+        </button>
+        <span id="mobile-orch-zoom-badge" class="badge-info">58%</span>
+      </div>
+
       <!-- Top Control Toolbar -->
-      <div class="toolbar-panel no-print">
+      <div id="orch-toolbar" class="toolbar-panel collapsible-mobile no-print">
         <div class="toolbar-group">
           <label class="field-label" for="select-sample-score"><i class="fa-solid fa-book-open"></i> เพลงตัวอย่าง:</label>
           <select id="select-sample-score" class="select-ctrl">
@@ -211,7 +222,7 @@
       </div>
 
       <!-- Playback & Auto-Scroll Transport -->
-      <div class="transport-bar no-print">
+      <div id="orch-transport" class="transport-bar no-print">
         <div class="transport-left">
           <button id="btn-xml-play" class="btn btn-success">
             <i class="fa-solid fa-play"></i> เล่นเสียง
@@ -263,7 +274,18 @@
 
     <!-- TAB 2: SCORE COMPOSER (ABC STUDIO) -->
     <section id="view-composer" class="tab-view">
-      <div class="toolbar-panel no-print">
+      <div class="mobile-tools-strip no-print">
+        <div id="composer-mobile-tabs" class="composer-mobile-tabs">
+          <button class="btn-chip active" data-cmode="preview"><i class="fa-solid fa-music"></i> ดูโน้ต</button>
+          <button class="btn-chip" data-cmode="edit"><i class="fa-solid fa-pen"></i> เขียนโน้ต</button>
+          <button class="btn-chip" data-cmode="split">แบ่ง 2 จอ</button>
+        </div>
+        <button id="btn-toggle-composer-tools" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-sliders"></i> แถบเครื่องมือ
+        </button>
+      </div>
+
+      <div id="composer-toolbar" class="toolbar-panel collapsible-mobile no-print">
         <div class="toolbar-group">
           <label class="field-label" for="select-abc-template"><i class="fa-solid fa-wand-magic-sparkles"></i> เทมเพลต:</label>
           <select id="select-abc-template" class="select-ctrl">
@@ -289,7 +311,7 @@
       </div>
 
       <!-- Visual Quick-Insert Palette -->
-      <div id="abc-quick-toolbar" class="quick-insert-bar no-print">
+      <div id="abc-quick-toolbar" class="quick-insert-bar collapsible-mobile no-print">
         <div class="qi-group">
           <span class="qi-label">เสียงต่ำ-กลาง:</span>
           <button class="qi-btn" data-insert="C">โด (C)</button>
@@ -393,7 +415,12 @@
 
     <!-- TAB 3: STAGE TELEPROMPTER & PDF AUTO-SCROLLER -->
     <section id="view-stage" class="tab-view">
-      <div class="toolbar-panel no-print">
+      <div class="mobile-tools-strip no-print">
+        <button id="btn-toggle-stage-tools" class="btn btn-secondary btn-sm">
+          <i class="fa-solid fa-sliders"></i> เปิดไฟล์ PDF / ตั้งสปีด / ปากกา
+        </button>
+      </div>
+      <div id="stage-toolbar" class="toolbar-panel collapsible-mobile no-print">
         <div class="toolbar-group">
           <input type="file" id="input-stage-file" accept=".pdf,.png,.jpg,.jpeg,.webp" multiple hidden />
           <button id="btn-stage-upload" class="btn btn-primary">
@@ -441,7 +468,7 @@
       </div>
 
       <!-- Stage Annotation Bar -->
-      <div class="annotation-bar no-print">
+      <div id="stage-annotation-bar" class="annotation-bar collapsible-mobile no-print">
         <button id="btn-stage-draw-toggle" class="btn btn-secondary btn-sm">
           <i class="fa-solid fa-pen"></i> โหมดขีดเขียนบนโน้ต: ปิด
         </button>
@@ -558,6 +585,19 @@
         <button class="btn btn-primary" data-close="modal-shortcuts">เข้าใจแล้ว</button>
       </div>
     </div>
+  </div>
+
+  <!-- Floating Mobile & Focus-Reader Quick Action Bar -->
+  <div id="floating-mobile-bar" class="floating-mobile-bar no-print">
+    <button id="btn-float-play" class="float-btn primary" title="เล่น / หยุด">
+      <i class="fa-solid fa-play"></i>
+    </button>
+    <button id="btn-float-scroll" class="float-btn" title="Auto-Scroll">
+      <i class="fa-solid fa-angles-down"></i>
+    </button>
+    <button id="btn-float-reader" class="float-btn" title="โหมดอ่านเต็มจอ / แสดงเมนู">
+      <i class="fa-solid fa-expand"></i>
+    </button>
   </div>
 
   <!-- Toast Notifications -->

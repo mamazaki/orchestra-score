@@ -20,7 +20,7 @@
     currentParts: [],
     selectedPartIds: [], // empty = Full Score
     transposeSemi: 0,
-    zoomLevel: 0.85,
+    zoomLevel: window.innerWidth <= 768 ? 0.58 : 0.85,
     mixerConfig: {},
     xmlAutoScroll: false,
     xmlScrollPos: 0,
@@ -88,6 +88,7 @@
     initStageViewer();
     initLibraryAndSetlists();
     initGlobalShortcuts();
+    initMobileUX();
 
     // Start unified animation loop for smooth auto-scrolling
     requestAnimationFrame(animationLoop);
@@ -123,6 +124,7 @@
     });
 
     $('#btn-fullscreen').addEventListener('click', toggleFullscreen);
+    $('#btn-focus-reader').addEventListener('click', toggleFocusReaderMode);
     $('#btn-shortcuts-help').addEventListener('click', () => openModal('modal-shortcuts'));
 
     $$('[data-close]').forEach((btn) => {
@@ -145,6 +147,7 @@
         try { state.osmd.render(); } catch (_) {}
       }, 60);
     }
+    syncFloatingBar();
   }
 
   function toggleFullscreen() {
@@ -366,6 +369,9 @@
     });
 
     // Zoom Controls
+    const initPct = `${Math.round(state.zoomLevel * 100)}%`;
+    $('#zoom-label').textContent = initPct;
+    if ($('#mobile-orch-zoom-badge')) $('#mobile-orch-zoom-badge').textContent = initPct;
     $('#btn-zoom-in').addEventListener('click', () => setOsmdZoom(state.zoomLevel + 0.1));
     $('#btn-zoom-out').addEventListener('click', () => setOsmdZoom(state.zoomLevel - 0.1));
 
@@ -402,16 +408,7 @@
     });
 
     // Auto-Scroll Toggle
-    $('#btn-xml-autoscroll').addEventListener('click', () => {
-      state.xmlAutoScroll = !state.xmlAutoScroll;
-      state.xmlScrollPos = $('#osmd-scroll-wrapper').scrollTop;
-      const btn = $('#btn-xml-autoscroll');
-      btn.innerHTML = state.xmlAutoScroll
-        ? '<i class="fa-solid fa-pause"></i> Auto-Scroll: เปิด'
-        : '<i class="fa-solid fa-angles-down"></i> Auto-Scroll: ปิด';
-      btn.classList.toggle('btn-success', state.xmlAutoScroll);
-      btn.classList.toggle('btn-secondary', !state.xmlAutoScroll);
-    });
+    $('#btn-xml-autoscroll').addEventListener('click', toggleXmlAutoScroll);
 
     // Mixer Modal
     $('#btn-open-mixer').addEventListener('click', () => {
@@ -532,12 +529,26 @@
   }
 
   function setOsmdZoom(newZoom) {
-    state.zoomLevel = Math.max(0.45, Math.min(1.6, Math.round(newZoom * 100) / 100));
-    $('#zoom-label').textContent = `${Math.round(state.zoomLevel * 100)}%`;
+    state.zoomLevel = Math.max(0.4, Math.min(1.6, Math.round(newZoom * 100) / 100));
+    const pct = `${Math.round(state.zoomLevel * 100)}%`;
+    $('#zoom-label').textContent = pct;
+    if ($('#mobile-orch-zoom-badge')) $('#mobile-orch-zoom-badge').textContent = pct;
     if (state.osmd && state.rawXml) {
       state.osmd.Zoom = state.zoomLevel;
       try { state.osmd.render(); } catch (_) {}
     }
+  }
+
+  function toggleXmlAutoScroll() {
+    state.xmlAutoScroll = !state.xmlAutoScroll;
+    state.xmlScrollPos = $('#osmd-scroll-wrapper').scrollTop;
+    const btn = $('#btn-xml-autoscroll');
+    btn.innerHTML = state.xmlAutoScroll
+      ? '<i class="fa-solid fa-pause"></i> Auto-Scroll: เปิด'
+      : '<i class="fa-solid fa-angles-down"></i> Auto-Scroll: ปิด';
+    btn.classList.toggle('btn-success', state.xmlAutoScroll);
+    btn.classList.toggle('btn-secondary', !state.xmlAutoScroll);
+    syncFloatingBar();
   }
 
   function startXmlPlayback() {
@@ -555,6 +566,7 @@
     $('#btn-xml-play').disabled = true;
     $('#btn-xml-pause').disabled = false;
     $('#btn-xml-stop').disabled = false;
+    syncFloatingBar();
 
     const totalMeasures = audioEngine.sequence.totalMeasures || '--';
     const scrollWrapper = $('#osmd-scroll-wrapper');
@@ -602,6 +614,7 @@
     $('#btn-xml-play').disabled = false;
     $('#btn-xml-pause').disabled = true;
     $('#btn-xml-stop').disabled = false;
+    syncFloatingBar();
   }
 
   function stopXmlPlayback() {
@@ -614,6 +627,7 @@
     }
     const totalMeasures = audioEngine.sequence?.totalMeasures || '--';
     $('#xml-measure-progress').textContent = `ห้องที่ 1 / ${totalMeasures}`;
+    syncFloatingBar();
   }
 
   function renderMixerModal() {
@@ -849,13 +863,17 @@
       onEnded: () => {
         if (state.abcLoop && state.activeTab === 'composer') {
           playAbcScore();
+        } else {
+          syncFloatingBar();
         }
       }
     });
+    syncFloatingBar();
   }
 
   function stopAbcScore() {
     audioEngine.stopPlayback();
+    syncFloatingBar();
   }
 
   function extractEventsFromAbcVisualObj(tune) {
@@ -1202,6 +1220,7 @@
       btn.innerHTML = '<i class="fa-solid fa-play"></i> เริ่ม Auto-Scroll (Space)';
       btn.classList.remove('btn-danger');
       btn.classList.add('btn-success');
+      syncFloatingBar();
       return;
     }
 
@@ -1216,6 +1235,7 @@
       btn.innerHTML = '<i class="fa-solid fa-pause"></i> หยุด Auto-Scroll (Space)';
       btn.classList.remove('btn-success');
       btn.classList.add('btn-danger');
+      syncFloatingBar();
     };
 
     if ($('#chk-stage-countin').checked) {
@@ -1290,6 +1310,7 @@
         btn.innerHTML = '<i class="fa-solid fa-angles-down"></i> Auto-Scroll: ปิด';
         btn.classList.remove('btn-success');
         btn.classList.add('btn-secondary');
+        syncFloatingBar();
       }
     }
 
@@ -1567,8 +1588,137 @@
         toggleFullscreen();
       } else if (e.key === 'Escape') {
         $$('.modal').forEach((m) => m.classList.add('hidden'));
+        if (document.body.classList.contains('focus-reader-mode')) {
+          toggleFocusReaderMode();
+        }
       }
     });
+  }
+
+  // =========================================================================
+  // Mobile UX, Collapsible Toolbars & Focus Reader Mode
+  // =========================================================================
+  function initMobileUX() {
+    const isPhone = window.innerWidth <= 768;
+    const composerSplit = $('.composer-split');
+
+    if (isPhone) {
+      $$('.collapsible-mobile').forEach((el) => el.classList.add('mobile-collapsed'));
+      if (composerSplit) composerSplit.setAttribute('data-cmode', 'preview');
+    } else if (composerSplit) {
+      composerSplit.setAttribute('data-cmode', 'split');
+    }
+
+    $('#btn-toggle-orch-tools')?.addEventListener('click', () => {
+      $('#orch-toolbar')?.classList.toggle('mobile-collapsed');
+    });
+
+    $('#btn-toggle-composer-tools')?.addEventListener('click', () => {
+      const collapsed = $('#composer-toolbar')?.classList.toggle('mobile-collapsed');
+      $('#abc-quick-toolbar')?.classList.toggle('mobile-collapsed', collapsed);
+    });
+
+    $('#btn-toggle-stage-tools')?.addEventListener('click', () => {
+      const collapsed = $('#stage-toolbar')?.classList.toggle('mobile-collapsed');
+      $('#stage-annotation-bar')?.classList.toggle('mobile-collapsed', collapsed);
+    });
+
+    // Composer mobile view switcher (Preview / Edit / Split)
+    $$('#composer-mobile-tabs .btn-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        $$('#composer-mobile-tabs .btn-chip').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (composerSplit) composerSplit.setAttribute('data-cmode', btn.dataset.cmode);
+        if (btn.dataset.cmode !== 'edit') {
+          setTimeout(() => renderAbcScore(), 50);
+        }
+      });
+    });
+
+    // Floating quick actions (Thumb reach on smartphone & Focus Reader Mode)
+    $('#btn-float-play')?.addEventListener('click', () => {
+      if (state.activeTab === 'orchestra') {
+        if (audioEngine.isPlaying) pauseXmlPlayback();
+        else startXmlPlayback();
+      } else if (state.activeTab === 'composer') {
+        if (audioEngine.isPlaying) stopAbcScore();
+        else playAbcScore();
+      } else if (state.activeTab === 'stage') {
+        toggleStageAutoScroll();
+      }
+    });
+
+    $('#btn-float-scroll')?.addEventListener('click', () => {
+      if (state.activeTab === 'orchestra') {
+        toggleXmlAutoScroll();
+      } else if (state.activeTab === 'stage') {
+        toggleStageAutoScroll();
+      } else if (state.activeTab === 'composer') {
+        const pane = $('.composer-preview-pane');
+        pane?.scrollBy({ top: pane.clientHeight * 0.6, behavior: 'smooth' });
+      }
+    });
+
+    $('#btn-float-reader')?.addEventListener('click', toggleFocusReaderMode);
+
+    // Double-tap on score paper to enter/exit full-screen reader mode on mobile
+    ['#osmd-container', '#abc-paper', '#stage-pages-wrapper'].forEach((sel) => {
+      let lastTap = 0;
+      $(sel)?.addEventListener('touchend', (e) => {
+        if (sel === '#stage-pages-wrapper' && state.drawMode) return;
+        const now = Date.now();
+        if (now - lastTap > 0 && now - lastTap < 300) {
+          e.preventDefault();
+          toggleFocusReaderMode();
+        }
+        lastTap = now;
+      });
+    });
+
+    syncFloatingBar();
+  }
+
+  function toggleFocusReaderMode() {
+    const active = document.body.classList.toggle('focus-reader-mode');
+    $('#btn-focus-reader')?.classList.toggle('active-state', active);
+    const floatReaderIcon = $('#btn-float-reader i');
+    if (floatReaderIcon) {
+      floatReaderIcon.className = active ? 'fa-solid fa-compress' : 'fa-solid fa-expand';
+    }
+    showToast(active ? 'เปิดโหมดอ่านโน้ตเต็มจอ (แตะปุ่มมุมล่างขวาหรือแตะ 2 ครั้งเพื่อออก)' : 'แสดงแถบเครื่องมือปกติแล้ว');
+    if (state.activeTab === 'orchestra' && state.osmd) {
+      setTimeout(() => {
+        try { state.osmd.render(); } catch (_) {}
+      }, 80);
+    }
+  }
+
+  function syncFloatingBar() {
+    const bar = $('#floating-mobile-bar');
+    if (!bar) return;
+    if (state.activeTab === 'library') {
+      bar.style.display = 'none';
+      return;
+    }
+    bar.style.display = '';
+
+    const playBtn = $('#btn-float-play');
+    const scrollBtn = $('#btn-float-scroll');
+
+    const playing =
+      state.activeTab === 'stage' ? state.stageAutoScroll : audioEngine.isPlaying;
+    if (playBtn) {
+      playBtn.innerHTML = playing
+        ? '<i class="fa-solid fa-pause"></i>'
+        : '<i class="fa-solid fa-play"></i>';
+    }
+
+    const scrolling =
+      (state.activeTab === 'orchestra' && state.xmlAutoScroll) ||
+      (state.activeTab === 'stage' && state.stageAutoScroll);
+    if (scrollBtn) {
+      scrollBtn.classList.toggle('active-state', scrolling);
+    }
   }
 
   // =========================================================================
