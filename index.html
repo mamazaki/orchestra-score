@@ -11,7 +11,7 @@
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
 
-  <link rel="manifest" href="./manifest.json?v=1.3.2" />
+  <link rel="manifest" href="./manifest.json?v=1.3.3" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%236366f1'/%3E%3Ctext x='32' y='45' font-size='36' text-anchor='middle' fill='white'%3E%F0%9F%8E%BC%3C/text%3E%3C/svg%3E" />
 
   <!-- Fonts & Icons -->
@@ -26,7 +26,7 @@
   <script src="https://cdn.jsdelivr.net/npm/abcjs@6.4.1/dist/abcjs-basic-min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-  <link rel="stylesheet" href="./css/styles.css?v=1.3.2" />
+  <link rel="stylesheet" href="./css/styles.css?v=1.3.3" />
 </head>
 <body>
   <!-- Top App Header -->
@@ -36,8 +36,10 @@
       <div class="brand-text">
         <div class="brand-title-wrap">
           <h1>MaestroScroll</h1>
-          <a href="https://github.com/mamazaki" target="_blank" rel="noopener noreferrer" class="brand-author" title="ผู้พัฒนา @mamazaki">@mamazaki</a>
-          <span class="brand-version" id="brand-version-badge" title="เวอร์ชัน v1.3.2 (แตะเพื่อล้างแคช/อัปเดต)">v1.3.2</span>
+          <div class="brand-badges-group">
+            <a href="https://github.com/mamazaki" target="_blank" rel="noopener noreferrer" class="brand-author" title="ผู้พัฒนา @mamazaki">@mamazaki</a>
+            <span class="brand-version" id="brand-version-badge" title="เวอร์ชัน v1.3.3 (แตะเพื่อล้างแคช/อัปเดต)">v1.3.3</span>
+          </div>
         </div>
         <span class="brand-sub">Orchestra &amp; Band Studio</span>
       </div>
@@ -80,10 +82,10 @@
       <button id="btn-toggle-theme" class="icon-btn" title="สลับธีมหน้าจอ (มืด / สว่าง)">
         <i class="fa-solid fa-moon"></i>
       </button>
-      <button id="btn-fullscreen" class="icon-btn" title="เต็มจอ (F)">
+      <button id="btn-fullscreen" class="icon-btn hide-sm" title="เต็มจอ (F)">
         <i class="fa-solid fa-expand"></i>
       </button>
-      <button id="btn-shortcuts-help" class="icon-btn" title="คีย์ลัดและแป้นเหยียบ">
+      <button id="btn-shortcuts-help" class="icon-btn hide-sm" title="คีย์ลัดและแป้นเหยียบ">
         <i class="fa-solid fa-keyboard"></i>
       </button>
     </div>
@@ -128,9 +130,17 @@
       </div>
 
       <!-- Reference Tone & Mic Tuner Card -->
-      <div class="drawer-card">
+      <div class="drawer-card tuner-card">
         <div class="drawer-card-header">
-          <h3><i class="fa-solid fa-wave-square"></i> ตั้งสายวงดุริยางค์ (Tuning &amp; Mic Tuner)</h3>
+          <div class="tuner-header-title">
+            <h3><i class="fa-solid fa-guitar"></i> เครื่องตั้งสาย (Tuner &amp; Presets)</h3>
+            <div class="tuner-preset-chips" id="tuner-preset-chips">
+              <button class="btn-chip active" data-preset="guitar">🎸 กีตาร์ (Guitar)</button>
+              <button class="btn-chip" data-preset="bass">🎸 เบส (Bass)</button>
+              <button class="btn-chip" data-preset="winds">🎷 เครื่องลม/วง (Orchestra)</button>
+              <button class="btn-chip" data-preset="chromatic">🎹 โครมาติก (All)</button>
+            </div>
+          </div>
           <button id="btn-mic-tuner" class="btn btn-secondary btn-sm">
             <i class="fa-solid fa-microphone"></i> เปิดไมค์ตั้งสาย
           </button>
@@ -150,16 +160,63 @@
               <div class="tuner-track">
                 <div id="tuner-needle" class="tuner-needle"></div>
               </div>
-              <div id="tuner-cents-text" class="tuner-cents-text">พร้อมวัดเสียง</div>
+              <div id="tuner-cents-text" class="tuner-cents-text">พร้อมวัดเสียง (แตะสายเพื่อฟังเสียงเทียบ)</div>
             </div>
           </div>
-          <div class="ref-tones-row">
-            <span class="ref-label">เสียงเทียบ:</span>
-            <button class="btn-chip btn-ref-tone" data-freq="466.16" title="มาตรฐานวงดุริยางค์ / เครื่องลม">Bb4 (466Hz)</button>
-            <button class="btn-chip btn-ref-tone" data-freq="440" title="มาตรฐานวงออร์เคสตรา">A4 (440Hz)</button>
-            <button class="btn-chip btn-ref-tone" data-freq="442" title="วงออร์เคสตราสากลบางวง">A4 (442Hz)</button>
-            <button class="btn-chip btn-ref-tone" data-freq="349.23" title="ฮอร์น">F4 (349Hz)</button>
-            <button id="btn-stop-ref-tone" class="btn-chip danger" title="หยุดเสียงเทียบ"><i class="fa-solid fa-stop"></i></button>
+
+          <!-- Panel 1: Guitar Standard (E2, A2, D3, G3, B3, E4 + Drop D) -->
+          <div id="tuner-panel-guitar" class="tuner-preset-panel">
+            <span class="ref-label"><i class="fa-solid fa-guitar"></i> กีตาร์ (6 สาย):</span>
+            <div class="preset-string-buttons">
+              <button class="btn-chip btn-ref-tone" data-freq="82.41" data-note="E2" title="สาย 6: E2 (82.4Hz)"><strong>สาย 6</strong> E2 (82Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="110.00" data-note="A2" title="สาย 5: A2 (110Hz)"><strong>สาย 5</strong> A2 (110Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="146.83" data-note="D3" title="สาย 4: D3 (147Hz)"><strong>สาย 4</strong> D3 (147Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="196.00" data-note="G3" title="สาย 3: G3 (196Hz)"><strong>สาย 3</strong> G3 (196Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="246.94" data-note="B3" title="สาย 2: B3 (247Hz)"><strong>สาย 2</strong> B3 (247Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="329.63" data-note="E4" title="สาย 1: E4 (330Hz)"><strong>สาย 1</strong> E4 (330Hz)</button>
+              <button class="btn-chip btn-ref-tone btn-tune-opt" data-freq="73.42" data-note="D2" title="Drop D: D2 (73.4Hz)">Drop D (73Hz)</button>
+              <button class="btn-chip danger btn-stop-ref-tone" title="หยุดเสียงเทียบ"><i class="fa-solid fa-stop"></i></button>
+            </div>
+          </div>
+
+          <!-- Panel 2: Bass Standard (E1, A1, D2, G2 + Low B0) -->
+          <div id="tuner-panel-bass" class="tuner-preset-panel hidden">
+            <span class="ref-label"><i class="fa-solid fa-guitar"></i> เบส (4 &amp; 5 สาย):</span>
+            <div class="preset-string-buttons">
+              <button class="btn-chip btn-ref-tone" data-freq="41.20" data-note="E1" title="สาย 4: E1 (41.2Hz)"><strong>สาย 4</strong> E1 (41.2Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="55.00" data-note="A1" title="สาย 3: A1 (55Hz)"><strong>สาย 3</strong> A1 (55Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="73.42" data-note="D2" title="สาย 2: D2 (73.4Hz)"><strong>สาย 2</strong> D2 (73.4Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="98.00" data-note="G2" title="สาย 1: G2 (98Hz)"><strong>สาย 1</strong> G2 (98Hz)</button>
+              <button class="btn-chip btn-ref-tone btn-tune-opt" data-freq="30.87" data-note="B0" title="สาย 5 (เบส 5 สาย): B0 (30.9Hz)"><strong>สาย 5</strong> B0 (31Hz)</button>
+              <button class="btn-chip danger btn-stop-ref-tone" title="หยุดเสียงเทียบ"><i class="fa-solid fa-stop"></i></button>
+            </div>
+          </div>
+
+          <!-- Panel 3: Winds / Orchestra Preset -->
+          <div id="tuner-panel-winds" class="tuner-preset-panel hidden">
+            <span class="ref-label"><i class="fa-solid fa-music"></i> ดุริยางค์/เครื่องเป่า:</span>
+            <div class="preset-string-buttons">
+              <button class="btn-chip btn-ref-tone" data-freq="466.16" data-note="Bb4" title="มาตรฐานวงดุริยางค์ / เครื่องลม">Bb4 (466Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="440.00" data-note="A4" title="มาตรฐานออร์เคสตราสากล">A4 (440Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="442.00" data-note="A4" title="วงออร์เคสตราสากล (Concert A)">A4 (442Hz)</button>
+              <button class="btn-chip btn-ref-tone" data-freq="349.23" data-note="F4" title="ฮอร์น/เครื่องเป่า F">F4 (349Hz)</button>
+              <button class="btn-chip danger btn-stop-ref-tone" title="หยุดเสียงเทียบ"><i class="fa-solid fa-stop"></i></button>
+            </div>
+          </div>
+
+          <!-- Panel 4: Chromatic Common Notes -->
+          <div id="tuner-panel-chromatic" class="tuner-preset-panel hidden">
+            <span class="ref-label"><i class="fa-solid fa-sliders"></i> โน้ตเทียบทั่วไป:</span>
+            <div class="preset-string-buttons">
+              <button class="btn-chip btn-ref-tone" data-freq="261.63" data-note="C4">C4</button>
+              <button class="btn-chip btn-ref-tone" data-freq="293.66" data-note="D4">D4</button>
+              <button class="btn-chip btn-ref-tone" data-freq="329.63" data-note="E4">E4</button>
+              <button class="btn-chip btn-ref-tone" data-freq="349.23" data-note="F4">F4</button>
+              <button class="btn-chip btn-ref-tone" data-freq="392.00" data-note="G4">G4</button>
+              <button class="btn-chip btn-ref-tone" data-freq="440.00" data-note="A4">A4</button>
+              <button class="btn-chip btn-ref-tone" data-freq="493.88" data-note="B4">B4</button>
+              <button class="btn-chip danger btn-stop-ref-tone" title="หยุดเสียงเทียบ"><i class="fa-solid fa-stop"></i></button>
+            </div>
           </div>
         </div>
       </div>
@@ -621,7 +678,7 @@
         <div class="modal-app-card">
           <div class="modal-app-header">
             <div>
-              <div class="modal-app-title">MaestroScroll <a href="https://github.com/mamazaki" target="_blank" rel="noopener noreferrer" class="brand-author">@mamazaki</a> <span class="brand-version">v1.3.2</span></div>
+              <div class="modal-app-title">MaestroScroll <a href="https://github.com/mamazaki" target="_blank" rel="noopener noreferrer" class="brand-author">@mamazaki</a> <span class="brand-version">v1.3.3</span></div>
               <div class="modal-app-subtitle">Orchestra &amp; Band Sheet Music Studio</div>
             </div>
             <button id="btn-modal-clear-cache" class="btn btn-warning btn-sm" title="ล้าง Service Worker และ Browser Cache ทั้งหมด">
@@ -668,9 +725,9 @@
   <div id="toast-container" class="toast-container no-print"></div>
 
   <!-- Scripts -->
-  <script src="./js/sample-scores.js?v=1.3.2"></script>
-  <script src="./js/audio-engine.js?v=1.3.2"></script>
-  <script src="./js/xml-processor.js?v=1.3.2"></script>
-  <script src="./js/app.js?v=1.3.2"></script>
+  <script src="./js/sample-scores.js?v=1.3.3"></script>
+  <script src="./js/audio-engine.js?v=1.3.3"></script>
+  <script src="./js/xml-processor.js?v=1.3.3"></script>
+  <script src="./js/app.js?v=1.3.3"></script>
 </body>
 </html>

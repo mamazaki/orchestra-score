@@ -1,13 +1,13 @@
-const CACHE_NAME = 'maestroscroll-v1.3.2';
+const CACHE_NAME = 'maestroscroll-v1.3.3';
 const CORE_ASSETS = [
   './',
   './index.html',
-  './css/styles.css?v=1.3.2',
-  './js/sample-scores.js?v=1.3.2',
-  './js/audio-engine.js?v=1.3.2',
-  './js/xml-processor.js?v=1.3.2',
-  './js/app.js?v=1.3.2',
-  './manifest.json?v=1.3.2'
+  './css/styles.css?v=1.3.3',
+  './js/sample-scores.js?v=1.3.3',
+  './js/audio-engine.js?v=1.3.3',
+  './js/xml-processor.js?v=1.3.3',
+  './js/app.js?v=1.3.3',
+  './manifest.json?v=1.3.3'
 ];
 
 self.addEventListener('install', (event) => {

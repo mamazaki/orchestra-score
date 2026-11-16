@@ -428,16 +428,44 @@ class MaestroAudioEngine {
   startReferenceTone(freq) {
     this.stopReferenceTone();
     const ctx = this.ensureContext();
-    const osc = ctx.createOscillator();
+    const now = ctx.currentTime;
+
+    // Use dual-oscillator rich tone for low bass/guitar notes (< 160 Hz)
+    // so the pitch is clearly audible even on small mobile phone speakers.
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
     const gain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    gain.gain.setValueAtTime(0.001, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(0.25, ctx.currentTime + 0.08);
-    osc.connect(gain);
+
+    if (freq < 160) {
+      osc1.type = 'triangle';
+      osc2.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, now);
+      osc2.frequency.setValueAtTime(freq * 2, now); // 1st harmonic
+    } else {
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(freq, now);
+      osc2.frequency.setValueAtTime(freq, now);
+    }
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.28, now + 0.08);
+
+    osc1.connect(gain);
+    if (freq < 160) {
+      const harmGain = ctx.createGain();
+      harmGain.gain.setValueAtTime(0.18, now);
+      osc2.connect(harmGain);
+      harmGain.connect(gain);
+      osc2.start(now);
+      this.refOsc2 = osc2;
+    } else {
+      this.refOsc2 = null;
+    }
+
     gain.connect(this.masterGain);
-    osc.start();
-    this.refOsc = osc;
+    osc1.start(now);
+    this.refOsc = osc1;
     this.refGain = gain;
   }
 
@@ -447,8 +475,12 @@ class MaestroAudioEngine {
         const now = this.ctx.currentTime;
         this.refGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
         this.refOsc.stop(now + 0.07);
+        if (this.refOsc2) {
+          this.refOsc2.stop(now + 0.07);
+        }
       } catch (_) {}
       this.refOsc = null;
+      this.refOsc2 = null;
       this.refGain = null;
     }
   }
@@ -462,7 +494,7 @@ class MaestroAudioEngine {
       this.tunerStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.tunerSource = ctx.createMediaStreamSource(this.tunerStream);
       this.tunerAnalyser = ctx.createAnalyser();
-      this.tunerAnalyser.fftSize = 2048;
+      this.tunerAnalyser.fftSize = 4096; // 4096 buffer for accurate low-frequency Bass & Guitar detection
       this.tunerSource.connect(this.tunerAnalyser);
 
       const buf = new Float32Array(this.tunerAnalyser.fftSize);
@@ -472,7 +504,8 @@ class MaestroAudioEngine {
         if (!this.tunerAnalyser) return;
         this.tunerAnalyser.getFloatTimeDomainData(buf);
         const freq = this.autoCorrelate(buf, ctx.sampleRate);
-        if (freq > 45 && freq < 2200) {
+        // Supports Low B (B0: 30.87 Hz) and Low E (E1: 41.20 Hz) for Bass, through high notes
+        if (freq > 28 && freq < 2400) {
           const noteNum = 12 * (Math.log(freq / 440) / Math.log(2)) + 69;
           const nearest = Math.round(noteNum);
           const cents = Math.round((noteNum - nearest) * 100);
@@ -510,7 +543,7 @@ class MaestroAudioEngine {
       rms += buf[i] * buf[i];
     }
     rms = Math.sqrt(rms / size);
-    if (rms < 0.015) return -1;
+    if (rms < 0.007) return -1; // Sensitive for acoustic guitar and bass strings
 
     let r1 = 0;
     let r2 = size - 1;

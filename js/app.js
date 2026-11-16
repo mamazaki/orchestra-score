@@ -74,10 +74,10 @@
   // Cache Management & Force Reload
   // =========================================================================
   async function clearAppCacheAndReload(promptConfirm = false) {
-    if (promptConfirm && !confirm('ต้องการล้างแคชเครื่องและโหลดเวอร์ชันล่าสุด v1.3.2 ใช่หรือไม่?')) {
+    if (promptConfirm && !confirm('ต้องการล้างแคชเครื่องและโหลดเวอร์ชันล่าสุด v1.3.3 ใช่หรือไม่?')) {
       return;
     }
-    showToast('กำลังล้างแคชเครื่องและดึงเวอร์ชันล่าสุด v1.3.2...', 'info');
+    showToast('กำลังล้างแคชเครื่องและดึงเวอร์ชันล่าสุด v1.3.3...', 'info');
 
     try {
       if ('serviceWorker' in navigator) {
@@ -114,7 +114,7 @@
     toast.className = 'toast info toast-update-banner';
     toast.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;">
-        <span><i class="fa-solid fa-sparkles text-accent"></i> มีอัปเดตเวอร์ชันใหม่ (v1.3.2)</span>
+        <span><i class="fa-solid fa-sparkles text-accent"></i> มีอัปเดตเวอร์ชันใหม่ (v1.3.3)</span>
         <button id="btn-toast-update-now" class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:0.75rem;">
           <i class="fa-solid fa-arrows-rotate"></i> อัปเดตทันที
         </button>
@@ -137,7 +137,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker
-        .register('./sw.js?v=1.3.2', { updateViaCache: 'none' })
+        .register('./sw.js?v=1.3.3', { updateViaCache: 'none' })
         .then((reg) => {
           // Check for newer SW on server immediately
           reg.update().catch(() => {});
@@ -325,7 +325,21 @@
 
     $('#btn-metro-toggle').addEventListener('click', toggleMetronome);
 
-    // Reference Pitches
+    // =========================================================================
+    // Tuner Presets & Reference Pitches
+    // =========================================================================
+    const presetChips = $$('#tuner-preset-chips .btn-chip');
+    presetChips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        presetChips.forEach((c) => c.classList.remove('active'));
+        chip.classList.add('active');
+        const preset = chip.dataset.preset;
+        $$('.tuner-preset-panel').forEach((p) => p.classList.add('hidden'));
+        const targetPanel = $(`#tuner-panel-${preset}`);
+        if (targetPanel) targetPanel.classList.remove('hidden');
+      });
+    });
+
     $$('.btn-ref-tone').forEach((btn) => {
       btn.addEventListener('click', () => {
         const freq = parseFloat(btn.dataset.freq);
@@ -340,9 +354,11 @@
       });
     });
 
-    $('#btn-stop-ref-tone').addEventListener('click', () => {
-      $$('.btn-ref-tone').forEach((b) => b.classList.remove('active'));
-      audioEngine.stopReferenceTone();
+    $$('.btn-stop-ref-tone').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        $$('.btn-ref-tone').forEach((b) => b.classList.remove('active'));
+        audioEngine.stopReferenceTone();
+      });
     });
 
     // Live Mic Tuner
@@ -357,6 +373,7 @@
         $('#tuner-note').textContent = '--';
         $('#tuner-freq').textContent = '0.0 Hz';
         $('#tuner-cents-text').textContent = 'ปิดไมค์ตั้งสายแล้ว';
+        $$('.btn-ref-tone').forEach((b) => b.classList.remove('string-matched'));
         return;
       }
 
@@ -364,7 +381,7 @@
       btn.innerHTML = '<i class="fa-solid fa-microphone-slash"></i> ปิดไมค์';
       btn.classList.remove('btn-secondary');
       btn.classList.add('btn-danger');
-      $('#tuner-cents-text').textContent = 'กำลังฟังเสียง...';
+      $('#tuner-cents-text').textContent = 'กำลังฟังเสียง... (ดีดสายได้เลยค่ะ)';
 
       await audioEngine.startTuner(
         ({ freq, note, cents }) => {
@@ -375,9 +392,19 @@
           needle.style.left = `${pct}%`;
           const inTune = Math.abs(cents) <= 6;
           needle.classList.toggle('in-tune', inTune);
+
+          // Highlight matched string in active preset panel
+          const activePanel = $('.tuner-preset-panel:not(.hidden)');
+          if (activePanel) {
+            activePanel.querySelectorAll('.btn-ref-tone').forEach((b) => {
+              const isMatch = b.dataset.note === note;
+              b.classList.toggle('string-matched', isMatch && inTune);
+            });
+          }
+
           $('#tuner-cents-text').textContent = inTune
-            ? `ตรงคีย์เป๊ะ! (${cents >= 0 ? '+' : ''}${cents} cents)`
-            : `${cents > 0 ? 'สูงไป +' : 'ต่ำไป '}${cents} cents`;
+            ? `ตรงคีย์เป๊ะ! ${note} (${cents >= 0 ? '+' : ''}${cents} cents)`
+            : `${cents > 0 ? 'สูงไป +' : 'ต่ำไป '}${cents} cents (${note})`;
         },
         () => {
           state.tunerRunning = false;
