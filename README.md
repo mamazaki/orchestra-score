@@ -35,24 +35,6 @@
 
 ---
 
-## 🚀 วิธีอัปโหลดขึ้น GitHub Pages
-
-1. สร้าง Repository ใหม่บน GitHub (เช่น `maestro-scroll`)
-2. เปิด Terminal / PowerShell ในโฟลเดอร์โปรเจกต์นี้ แล้วรันคำสั่ง:
-   ```bash
-   git remote add origin https://github.com/<USERNAME>/<REPO_NAME>.git
-   git branch -M main
-   git push -u origin main
-   ```
-3. เข้าไปที่หน้า GitHub Repository ของคุณ:
-   - ไปที่ **Settings** > **Pages**
-   - ในหัวข้อ **Build and deployment** > **Source** เลือก `Deploy from a branch`
-   - เลือก Branch เป็น `main` และโฟลเดอร์ `/ (root)` แล้วกด **Save**
-4. รอประมาณ 1-2 นาที เว็บแอปจะออนไลน์ทันทีที่:
-   `https://<USERNAME>.github.io/<REPO_NAME>/`
-
----
-
 ## ⌨️ คีย์ลัดสำหรับซ้อม & แสดงสด
 
 | ปุ่ม / แป้นเหยียบ | การทำงาน |
