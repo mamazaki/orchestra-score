@@ -74,10 +74,10 @@
   // Cache Management & Force Reload
   // =========================================================================
   async function clearAppCacheAndReload(promptConfirm = false) {
-    if (promptConfirm && !confirm('ต้องการล้างแคชเครื่องและโหลดเวอร์ชันล่าสุด v1.3.3 ใช่หรือไม่?')) {
+    if (promptConfirm && !confirm('ต้องการล้างแคชเครื่องและโหลดเวอร์ชันล่าสุด v1.3.4 ใช่หรือไม่?')) {
       return;
     }
-    showToast('กำลังล้างแคชเครื่องและดึงเวอร์ชันล่าสุด v1.3.3...', 'info');
+    showToast('กำลังล้างแคชเครื่องและดึงเวอร์ชันล่าสุด v1.3.4...', 'info');
 
     try {
       if ('serviceWorker' in navigator) {
@@ -114,7 +114,7 @@
     toast.className = 'toast info toast-update-banner';
     toast.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;">
-        <span><i class="fa-solid fa-sparkles text-accent"></i> มีอัปเดตเวอร์ชันใหม่ (v1.3.3)</span>
+        <span><i class="fa-solid fa-sparkles text-accent"></i> มีอัปเดตเวอร์ชันใหม่ (v1.3.4)</span>
         <button id="btn-toast-update-now" class="btn btn-primary btn-sm" style="padding:4px 10px;font-size:0.75rem;">
           <i class="fa-solid fa-arrows-rotate"></i> อัปเดตทันที
         </button>
@@ -137,7 +137,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
       navigator.serviceWorker
-        .register('./sw.js?v=1.3.3', { updateViaCache: 'none' })
+        .register('./sw.js?v=1.3.4', { updateViaCache: 'none' })
         .then((reg) => {
           // Check for newer SW on server immediately
           reg.update().catch(() => {});
@@ -176,6 +176,7 @@
     initLibraryAndSetlists();
     initGlobalShortcuts();
     initMobileUX();
+    initInAppManual();
 
     // Start unified animation loop for smooth auto-scrolling
     requestAnimationFrame(animationLoop);
@@ -234,6 +235,68 @@
     $$('.modal-backdrop').forEach((bd) => {
       bd.addEventListener('click', () => bd.closest('.modal').classList.add('hidden'));
     });
+  }
+
+  // =========================================================================
+  // In-App User Manual Controller
+  // =========================================================================
+  function initInAppManual() {
+    const manualModal = $('#modal-manual');
+    if (!manualModal) return;
+
+    const openBtns = [
+      $('#btn-manual-help'),
+      $('#btn-shortcuts-open-manual'),
+      ...$$('.btn-drawer-manual')
+    ];
+
+    openBtns.forEach((btn) => {
+      if (btn) {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openModal('modal-manual');
+        });
+      }
+    });
+
+    const tabs = $$('.manual-tab');
+    const sections = $$('.manual-section');
+    const searchBox = $('#manual-search-box');
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.manualTab;
+        if (searchBox) searchBox.value = '';
+
+        sections.forEach((sec) => {
+          sec.classList.toggle('hidden', sec.dataset.sectionId !== target);
+        });
+        const body = $('#manual-modal-body');
+        if (body) body.scrollTop = 0;
+      });
+    });
+
+    if (searchBox) {
+      searchBox.addEventListener('input', () => {
+        const query = searchBox.value.trim().toLowerCase();
+        if (!query) {
+          const activeTab = $('.manual-tab.active');
+          const target = activeTab ? activeTab.dataset.manualTab : 'overview';
+          sections.forEach((sec) => {
+            sec.classList.toggle('hidden', sec.dataset.sectionId !== target);
+          });
+          return;
+        }
+
+        sections.forEach((sec) => {
+          const text = sec.textContent.toLowerCase();
+          const matches = text.includes(query);
+          sec.classList.toggle('hidden', !matches);
+        });
+      });
+    }
   }
 
   function switchTab(tabName) {
